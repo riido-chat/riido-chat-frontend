@@ -1,0 +1,28 @@
+name: 🎨 design
+description: 변경할 디자인이 있나요? (기능 변화 없는 색상, 크기 및 여백 등의 디자인 수정)
+title: '[design] '
+labels: ['🎨 design']
+body:
+  - type: textarea
+    id: design-description
+    attributes:
+      label: 📄 설명
+      description: 새로운 디자인에 대한 설명을 작성해 주세요.
+      placeholder: 자세하게 작성하기!
+    validations:
+      required: true
+  - type: textarea
+    id: design-simulation
+    attributes:
+      label: ✅ 해야 할 일
+      description: 해야 할 일에 대한 Tasks를 작성해 주세요.
+      placeholder: 최대한 세분화해서 작성!
+    validations:
+      required: true
+  - type: textarea
+    id: design-more
+    attributes:
+      label: 📝 메모
+      description: 더 하고 싶은 말이 있다면 작성해 주세요.
+    validations:
+      required: false
