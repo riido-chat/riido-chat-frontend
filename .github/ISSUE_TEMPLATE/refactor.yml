@@ -1,7 +1,7 @@
 name: refactor
 description: 개선이 필요한 코드 구조가 있나요? (기능 변화 없는 코드 구조 개선 및 중복 제거)
-title: "[refactor] "
-labels: ["🛠️ refactor"]
+title: '[refactor] '
+labels: ['🛠️ refactor']
 body:
   - type: textarea
     id: refactor-description
