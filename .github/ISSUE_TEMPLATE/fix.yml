@@ -1,0 +1,28 @@
+name: 🐛 fix
+description: 기능에 관련된 수정 사항이 있나요? (기능 오류, 비정상 동작 및 UI 깨짐 수정)
+title: '[fix] '
+labels: ['🐛 fix']
+body:
+  - type: textarea
+    id: fix-description
+    attributes:
+      label: 📄 설명
+      description: 버그 수정에 대한 설명을 작성해 주세요.
+      placeholder: 자세하게 작성하기!
+    validations:
+      required: true
+  - type: textarea
+    id: fix-simulation
+    attributes:
+      label: ✅ 해야 할 일
+      description: 해야 할 일에 대한 Tasks를 작성해 주세요.
+      placeholder: 최대한 세분화해서 작성!
+    validations:
+      required: true
+  - type: textarea
+    id: fix-more
+    attributes:
+      label: 📝 메모
+      description: 더 하고 싶은 말이 있다면 작성해 주세요.
+    validations:
+      required: false

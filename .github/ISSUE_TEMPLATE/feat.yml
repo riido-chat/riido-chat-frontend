@@ -1,0 +1,28 @@
+name: ✨ feat
+description: 새로운 기능이나 화면이 필요한가요? (새로운 기능, 페이지 및 UI 구현)
+title: '[feat] '
+labels: ['✨ feat']
+body:
+  - type: textarea
+    id: feat-description
+    attributes:
+      label: 📄 설명
+      description: 새로운 기능에 대한 설명을 작성해 주세요.
+      placeholder: 자세하게 작성하기!
+    validations:
+      required: true
+  - type: textarea
+    id: feat-simulation
+    attributes:
+      label: ✅ 해야 할 일
+      description: 해야 할 일에 대한 Tasks를 작성해 주세요.
+      placeholder: 최대한 세분화해서 작성!
+    validations:
+      required: true
+  - type: textarea
+    id: feat-more
+    attributes:
+      label: 📝 메모
+      description: 더 하고 싶은 말이 있다면 작성해 주세요.
+    validations:
+      required: false

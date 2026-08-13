@@ -1,0 +1,30 @@
+name: refactor
+description: 개선이 필요한 코드 구조가 있나요? (기능 변화 없는 코드 구조 개선 및 중복 제거)
+title: "[refactor] "
+labels: ["🛠️ refactor"]
+body:
+  - type: textarea
+    id: refactor-description
+    attributes:
+      label: 📄 설명
+      description: 리팩터링이 필요한 이유와 개선할 내용을 작성해 주세요.
+      placeholder: 현재 구조의 문제점과 개선 방향을 작성해 주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: refactor-tasks
+    attributes:
+      label: ✅ 해야 할 일
+      description: 리팩터링에 필요한 작업을 작성해 주세요.
+      placeholder: 최대한 세분화해서 작성해 주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: refactor-more
+    attributes:
+      label: 📝 메모
+      description: 추가로 공유할 내용이 있다면 작성해 주세요.
+    validations:
+      required: false
