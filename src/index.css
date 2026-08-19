@@ -4,4 +4,55 @@
 @theme {
   /* Font */
   --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif;
+
+  /* Riido Slate - Gray System */
+  --color-rc-gray-0: #ffffff;
+  --color-rc-gray-50: #f9fafb;
+  --color-rc-gray-100: #f1f5f9;
+  --color-rc-gray-200: #e2e8f0;
+  --color-rc-gray-300: #cad5e2;
+  --color-rc-gray-400: #99a1af;
+  --color-rc-gray-500: #6a7282;
+  --color-rc-gray-600: #4a5565;
+  --color-rc-gray-700: #364153;
+  --color-rc-gray-800: #1e2939;
+  --color-rc-gray-900: #101828;
+  --color-rc-gray-950: #18181b;
+  --color-rc-gray-1000: #09090b;
+
+  /* Point Color - Iris System */
+  --color-rc-iris-50: #f3f1fe;
+  --color-rc-iris-100: #e5e2fd;
+  --color-rc-iris-200: #cbc6fc;
+  --color-rc-iris-300: #a59dfb;
+  --color-rc-iris-400: #8075fa;
+  --color-rc-iris-500: #5d4ff9;
+  --color-rc-iris-600: #4434f1;
+  --color-rc-iris-700: #3623d9;
+  --color-rc-iris-800: #3a2ca5;
+  --color-rc-iris-900: #372c7d;
+  --color-rc-iris-950: #261e4f;
+
+  /* Label */
+  --color-label-strong: var(--color-rc-gray-1000);
+  --color-label-normal: var(--color-rc-gray-950);
+  --color-label-alternative: #3f3f47;
+  --color-label-assistive: var(--color-rc-gray-400);
+
+  /* Background */
+  --color-background-normal: var(--color-rc-gray-0);
+  --color-background-elevated: #f8fafc;
+  --color-background-grouped: #f3f4f6;
+
+  /* Button - Iris */
+  --color-button-normal: var(--color-rc-iris-500);
+  --color-button-hover: var(--color-rc-iris-600);
+
+  /* Tab */
+  --color-tab-hover: var(--color-rc-iris-50);
+  --color-tab-active: var(--color-rc-iris-100);
+
+  /* Line */
+  --color-line-normal: #e5e5e5;
+  --color-line-elevated: #d4d4d4;
 }
