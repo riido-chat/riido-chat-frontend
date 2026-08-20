@@ -19,23 +19,23 @@
 
   --text-headline: 1.125rem; /* 18px */
   --text-headline--line-height: 1.5;
-  --text-headline--letter-spacing: -0.003em;
+  --text-headline--letter-spacing: -0.01em;
 
   --text-body-1: 1rem; /* 16px */
   --text-body-1--line-height: 1.5;
-  --text-body-1--letter-spacing: 0.005em;
+  --text-body-1--letter-spacing: -0.005em;
 
   --text-body-2: 0.9375rem; /* 15px */
   --text-body-2--line-height: 1.5;
-  --text-body-2--letter-spacing: 0.005em;
+  --text-body-2--letter-spacing: -0.005em;
 
   --text-label: 0.875rem; /* 14px */
   --text-label--line-height: 1.4;
-  --text-label--letter-spacing: 0.01em;
+  --text-label--letter-spacing: -0.008em;
 
   --text-caption: 0.75rem; /* 12px */
   --text-caption--line-height: 1.4;
-  --text-caption--letter-spacing: 0.02em;
+  --text-caption--letter-spacing: -0.005em;
 
   /* Riido Slate - Gray System */
   --color-rc-gray-0: #ffffff;
