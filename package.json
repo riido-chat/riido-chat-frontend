@@ -12,7 +12,9 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc -b --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -40,6 +42,9 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.65.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "storybook": "^10.5.10",
+    "@storybook/react-vite": "^10.5.10",
+    "eslint-plugin-storybook": "^10.5.10"
   }
 }
