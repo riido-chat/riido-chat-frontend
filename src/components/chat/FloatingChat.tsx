@@ -6,7 +6,7 @@ type FloatingChatProps = {
 
 export default function FloatingChat({ onClose }: FloatingChatProps) {
   return (
-    <Card className="fixed top-6 right-6 h-200 w-md shadow-lg">
+    <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)] shadow-lg">
       <CardHeader className="grid-cols-[auto_1fr_auto] items-center">
         <button
           onClick={onClose}
