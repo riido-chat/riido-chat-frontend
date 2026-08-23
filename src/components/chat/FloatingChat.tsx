@@ -18,7 +18,7 @@ export default function FloatingChat({ onClose }: FloatingChatProps) {
         <CardTitle>뤼이도 RAG 챗봇</CardTitle>
         <span className="size-6" aria-hidden />
       </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-y-auto"></CardContent>
+      <CardContent className="flex flex-col"></CardContent>
       <CardFooter>
         <input placeholder="Type a message..." className="w-full border p-2" />
       </CardFooter>
