@@ -2,7 +2,7 @@
 @import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 
 @theme {
-  /* Typography */
+  /*? Typography */
   --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif;
 
   --text-title-1: 2rem; /* 32px */
@@ -37,7 +37,12 @@
   --text-caption--line-height: 1.4;
   --text-caption--letter-spacing: -0.005em;
 
-  /* Riido Slate - Gray System */
+  /* Icon Size */
+  --size-icon-sm: 1.5rem; /* 24px */
+  --size-icon-lg: 2.5rem; /* 40px */
+
+  /*? Primitive */
+  /* Riido Gray */
   --color-rc-gray-0: #ffffff;
   --color-rc-gray-50: #f9fafb;
   --color-rc-gray-100: #f1f5f9;
@@ -52,6 +57,16 @@
   --color-rc-gray-950: #18181b;
   --color-rc-gray-1000: #09090b;
 
+  /* Riido Slate */
+  --color-rc-slate-50: #f8fafc;
+  --color-rc-slate-100: #f1f5f9;
+  --color-rc-slate-200: #e2e8f0;
+
+  /* Riido Neutral */
+  --color-rc-neutral-50: #fafafa;
+  --color-rc-neutral-100: #f5f5f5;
+  --color-rc-neutral-200: #e5e5e5;
+
   /* Point Color - Iris System */
   --color-rc-iris-50: #f3f1fe;
   --color-rc-iris-100: #e5e2fd;
@@ -65,32 +80,61 @@
   --color-rc-iris-900: #372c7d;
   --color-rc-iris-950: #261e4f;
 
-  /* Label */
-  --color-label-strong: var(--color-rc-gray-1000);
-  --color-label-normal: var(--color-rc-gray-950);
-  --color-label-alternative: #52525c;
+  /*? Sementic */
+  /* Label Color */
+  --color-label-strong: var(--color-rc-gray-950);
+  --color-label-normal: var(--color-rc-gray-900);
+  --color-label-alternative: var(--color-rc-gray-600);
   --color-label-assistive: var(--color-rc-gray-400);
 
-  /* Background */
-  --color-background-normal: var(--color-rc-gray-0);
-  --color-background-elevated: #f8fafc;
-  --color-background-grouped: #f3f4f6;
+  /* Background Color */
+  --color-background-default: var(--color-rc-gray-0);
+  --color-background-secondary: var(--color-rc-slate-50);
+  --color-background-tertiary: var(--color-rc-gray-100);
 
-  /* Button - Iris */
-  --color-button-normal: var(--color-rc-iris-500);
-  --color-button-hover: var(--color-rc-iris-600);
+  /* Line Color */
+  --color-line-normal: var(--color-rc-neutral-200);
+  --color-line-elevated: var(--color-rc-gray-400);
 
-  /* Tab */
-  --color-tab-hover: var(--color-rc-iris-50);
-  --color-tab-active: var(--color-rc-iris-100);
+  /* Button Color - Primary */
+  --color-button-primary-enabled: var(--color-rc-iris-500);
+  --color-button-primary-hovered: var(--color-rc-iris-600);
+  --color-button-primary-pressed: var(--color-rc-iris-700);
+  --color-button-disabled: var(--color-rc-gray-500);
 
-  /* Line */
-  --color-line-normal: #e5e5e5;
-  --color-line-elevated: #d4d4d4;
+  /* Button Color - Secondary */
+  --color-button-secondary-enabled: var(--color-rc-iris-100);
+  --color-button-secondary-hovered: var(--color-rc-iris-200);
+  --color-button-secondary-pressed: var(--color-rc-iris-300);
+
+  /* Button Color - Tertiary */
+  --color-button-tertiary-enabled: var(--color-rc-gray-0);
+  --color-button-tertiary-hovered: var(--color-rc-iris-50);
+  --color-button-tertiary-pressed: var(--color-rc-iris-100);
+
+  /* Button Color - Gray */
+  --color-button-gray-enabled: var(--color-rc-gray-100);
+  --color-button-gray-hovered: var(--color-rc-gray-200);
+  --color-button-gray-pressed: var(--color-rc-gray-300);
+
+  /* ButtonIcon */
+  --color-icon-iris-enabled: var(--color-rc-iris-500);
+  --color-icon-iris-hovered: var(--color-rc-iris-600);
+  --color-icon-iris-pressed: var(--color-rc-iris-700);
+
+  /* Gradient */
+  --background-image-rc-gradation: linear-gradient(
+    94deg,
+    var(--color-rc-slate-50) 33.81%,
+    var(--color-rc-iris-50) 107.53%
+  );
+
+  /* Shadow */
+  --shadow-rc-shadow: 0 -2px 20px 0 color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
 }
 
 @layer base {
   body {
-    @apply bg-background-normal text-label-normal antialiased;
+    @apply bg-background-default text-label-normal antialiased;
   }
 }
