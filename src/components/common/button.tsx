@@ -11,8 +11,8 @@ const buttonVariants = cva(
         default: 'bg-button-primary-enabled text-white hover:bg-button-primary-enabled/80',
         icon: 'rounded-full bg-transparent text-icon-iris-enabled hover:bg-button-tertiary-hovered active:bg-button-tertiary-pressed',
         ghost:
-          'rounded-full text-label-assistive hover:bg-background-tertiary active:text-label-alternative aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'rounded-full text-label-assistive hover:bg-background-tertiary active:text-label-alternative aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative',
+        link: 'text-button-primary-enabled underline-offset-4 hover:underline',
       },
       size: {
         default:
@@ -41,7 +41,12 @@ function Button({
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={(state) =>
+        cn(
+          buttonVariants({ variant, size }),
+          typeof className === 'function' ? className(state) : className,
+        )
+      }
       {...props}
     />
   );
