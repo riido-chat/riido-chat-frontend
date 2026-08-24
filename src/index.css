@@ -133,6 +133,29 @@
 
   /* Shadow */
   --shadow-rc-shadow: 0 -2px 20px 0 color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
+
+  /* Shadcn 호환 토큰 */
+  --color-background: var(--color-background-default);
+  --color-foreground: var(--color-label-normal);
+
+  --color-card: var(--color-background-default);
+  --color-card-foreground: var(--color-label-normal);
+  --color-popover: var(--color-background-default);
+  --color-popover-foreground: var(--color-label-normal);
+
+  --color-primary: var(--color-button-primary-enabled);
+  --color-primary-foreground: var(--color-rc-gray-0);
+  --color-secondary: var(--color-button-secondary-enabled);
+  --color-secondary-foreground: var(--color-label-normal);
+
+  --color-muted: var(--color-background-tertiary);
+  --color-muted-foreground: var(--color-label-assistive);
+  --color-accent: var(--color-button-tertiary-hovered);
+  --color-accent-foreground: var(--color-label-normal);
+
+  --color-border: var(--color-line-normal);
+  --color-input: var(--color-line-normal);
+  --color-ring: var(--color-button-primary-enabled);
 }
 
 @layer base {
