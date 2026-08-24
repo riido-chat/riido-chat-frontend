@@ -120,6 +120,7 @@
 
   /* ButtonIcon */
   --color-icon-iris-enabled: var(--color-rc-iris-500);
+  --color-icon-gray-enabled: var(--color-rc-gray-600);
   --color-icon-iris-hovered: var(--color-rc-iris-600);
   --color-icon-iris-pressed: var(--color-rc-iris-700);
 
