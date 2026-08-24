@@ -18,7 +18,7 @@ const meta = {
     },
     size: {
       control: 'select',
-      options: ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'],
+      options: ['default', 'xs', 'sm', 'lg', 'icon-xs', 'icon-sm', 'icon-lg'],
       description: '높이와 좌우 여백, 내부 아이콘 크기를 함께 결정합니다.',
     },
     disabled: {
