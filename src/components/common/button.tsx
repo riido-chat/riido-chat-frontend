@@ -23,7 +23,7 @@ const buttonVariants = cva(
         lg: 'h-10 gap-1.5 px-4 py-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
         'icon-xs': 'size-8 text-icon-gray-enabled',
         'icon-sm': 'size-10 text-icon-gray-enabled',
-        'icon-lg': 'size-12',
+        'icon-lg': 'size-11',
       },
     },
     defaultVariants: {

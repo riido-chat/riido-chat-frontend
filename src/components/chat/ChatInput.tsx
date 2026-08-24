@@ -30,25 +30,30 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-rc-gradation border-line-normal focus-within:ring-ring flex min-h-14 w-full items-center gap-4 rounded-md border-[1.2px] py-1.5 pr-1.5 pl-4 focus-within:ring-[1.6px]"
-    >
-      <Textarea
-        name="message"
-        aria-label="메시지 입력"
-        placeholder="어떤 것이 궁금하세요?"
-        onKeyDown={handleKeyDown}
-      />
-      <Button
-        type="submit"
-        className="self-end"
-        size="icon-lg"
-        variant="icon"
-        aria-label="메시지 전송"
+    <div className="flex w-full flex-col gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-rc-gradation border-line-normal focus-within:ring-ring flex min-h-14 w-full items-center gap-4 rounded-md border-[1.2px] py-1.5 pr-1.5 pl-4 focus-within:ring-[1.6px]"
       >
-        <IoSend className="size-icon-lg origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
-      </Button>
-    </form>
+        <Textarea
+          name="message"
+          aria-label="메시지 입력"
+          placeholder="어떤 것이 궁금하세요?"
+          onKeyDown={handleKeyDown}
+        />
+        <Button
+          type="submit"
+          className="self-end"
+          size="icon-lg"
+          variant="icon"
+          aria-label="메시지 전송"
+        >
+          <IoSend className="size-icon-lg origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
+        </Button>
+      </form>
+      <p className="text-caption text-label-assistive text-center font-normal">
+        AI 답변으로 해결되지 않는 경우 1:1 상담을 이용해 주세요.
+      </p>
+    </div>
   );
 }
