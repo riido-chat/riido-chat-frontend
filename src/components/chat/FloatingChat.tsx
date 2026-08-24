@@ -6,19 +6,19 @@ type FloatingChatProps = {
 
 export default function FloatingChat({ onClose }: FloatingChatProps) {
   return (
-    <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)] shadow-lg">
-      <CardHeader className="grid-cols-[auto_1fr_auto] items-center">
+    <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)]">
+      <CardHeader>
         <button
           onClick={onClose}
           aria-label="채팅 닫기"
-          className="size-10 rounded bg-gray-200 px-2 py-1 text-sm hover:bg-gray-300"
+          className="size-6 rounded bg-gray-200 hover:bg-gray-300"
         >
           {`<`}
         </button>
-        <CardTitle className="text-center text-lg font-bold">Floating Chat</CardTitle>
-        <span className="size-10" aria-hidden />
+        <CardTitle>뤼이도 RAG 챗봇</CardTitle>
+        <span className="size-6" aria-hidden />
       </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-y-auto"></CardContent>
+      <CardContent className="flex flex-col"></CardContent>
       <CardFooter>
         <input placeholder="Type a message..." className="w-full border p-2" />
       </CardFooter>
