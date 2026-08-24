@@ -163,15 +163,9 @@
     @apply bg-background-default text-label-normal antialiased;
   }
 
-  * {
-    /* Firefox 및 표준 속성을 지원하는 브라우저용 fallback */
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-rc-gray-200) transparent;
-  }
-
-  /* Chrome, Edge, desktop Safari 등 WebKit/Blink 계열 스크롤 디자인 */
+  /* Chrome, Edge, desktop Safari 등 WebKit/Blink 계열 */
   *::-webkit-scrollbar {
-    width: 24px; /* 10px + thumb 4px + 10px */
+    width: 24px;
     height: 24px;
   }
 
@@ -188,5 +182,13 @@
 
   *::-webkit-scrollbar-corner {
     background: transparent;
+  }
+
+  /* WebKit scrollbar를 지원하지 않는 브라우저 fallback */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-rc-gray-200) transparent;
+    }
   }
 }
