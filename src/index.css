@@ -163,10 +163,10 @@
     @apply bg-background-default text-label-normal antialiased;
   }
 
-  /* Chrome, Edge, desktop Safari 등 WebKit/Blink 계열 */
+  /* Chrome, Edge, desktop Safari 등 */
   *::-webkit-scrollbar {
-    width: 24px;
-    height: 24px;
+    width: 4px;
+    height: 4px;
   }
 
   *::-webkit-scrollbar-track {
@@ -174,17 +174,15 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    border: 10px solid transparent;
     border-radius: 9999px;
     background-color: var(--color-rc-gray-200);
-    background-clip: content-box;
   }
 
   *::-webkit-scrollbar-corner {
     background: transparent;
   }
 
-  /* WebKit scrollbar를 지원하지 않는 브라우저 fallback */
+  /* 미지원 fallback */
   @supports not selector(::-webkit-scrollbar) {
     * {
       scrollbar-width: thin;
