@@ -25,7 +25,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-header"
       className={cn(
-        'group/card-header border-b-line-normal @container/card-header grid auto-rows-min grid-cols-[auto_1fr_auto] items-center gap-1 rounded-t-xl border-b p-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]',
+        'group/card-header border-b-line-normal @container/card-header grid auto-rows-min grid-cols-[auto_1fr_auto] items-center gap-1 rounded-t-xl border-b p-6 font-bold has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]',
         className,
       )}
       {...props}
@@ -38,7 +38,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-title"
       className={cn(
-        'text-label-alternative text-center text-base leading-snug font-bold group-data-[size=sm]/card:text-sm',
+        'text-label-alternative text-headline text-center font-bold group-data-[size=sm]/card:text-sm',
         className,
       )}
       {...props}
