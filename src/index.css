@@ -38,6 +38,7 @@
   --text-caption--letter-spacing: -0.005em;
 
   /* Icon Size */
+  --size-icon-xs: 1.125rem; /* 18px */
   --size-icon-sm: 1.5rem; /* 24px */
   --size-icon-lg: 2.5rem; /* 40px */
 
