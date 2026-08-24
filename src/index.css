@@ -162,4 +162,31 @@
   body {
     @apply bg-background-default text-label-normal antialiased;
   }
+
+  * {
+    /* Firefox 및 표준 속성을 지원하는 브라우저용 fallback */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rc-gray-200) transparent;
+  }
+
+  /* Chrome, Edge, desktop Safari 등 WebKit/Blink 계열 스크롤 디자인 */
+  *::-webkit-scrollbar {
+    width: 24px; /* 10px + thumb 4px + 10px */
+    height: 24px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 10px solid transparent;
+    border-radius: 9999px;
+    background-color: var(--color-rc-gray-200);
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
