@@ -1,4 +1,5 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/common/card';
+import { Card, CardContent, CardFooter } from '@/components/common/card';
+import NavBar from '@/components/chat/NavBar';
 
 type FloatingChatProps = {
   onClose: () => void;
@@ -7,17 +8,7 @@ type FloatingChatProps = {
 export default function FloatingChat({ onClose }: FloatingChatProps) {
   return (
     <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)]">
-      <CardHeader>
-        <button
-          onClick={onClose}
-          aria-label="채팅 닫기"
-          className="size-6 rounded bg-gray-200 hover:bg-gray-300"
-        >
-          {`<`}
-        </button>
-        <CardTitle>뤼이도 RAG 챗봇</CardTitle>
-        <span className="size-6" aria-hidden />
-      </CardHeader>
+      <NavBar onClose={onClose}>뤼이도 RAG 챗봇</NavBar>
       <CardContent className="flex flex-col"></CardContent>
       <CardFooter>
         <input placeholder="Type a message..." className="w-full border p-2" />
