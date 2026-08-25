@@ -11,7 +11,7 @@ export type Citation = {
 export default function SourceBadge({ citation }: { citation: Citation }) {
   return (
     <Badge variant="link" render={<a href={citation.sourceUrl} target="_blank" rel="noreferrer" />}>
-      <FaLink className="size-4" />
+      <FaLink />
       <span className="flex items-center gap-1 [&>span+span]:before:mr-1 [&>span+span]:before:content-['>']">
         {citation.sectionPath.map((section) => (
           <span key={section}>{section}</span>
