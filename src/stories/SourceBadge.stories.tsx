@@ -34,3 +34,20 @@ export const CitationStates: Story = {
     </div>
   ),
 };
+
+export const LongSectionPath: Story = {
+  args: {
+    citation: {
+      citationNumber: 3,
+      documentTitle: '작업 관리',
+      sectionPath: ['작업 관리', '프로젝트 설정', '길이가 긴 하위 작업의 상세 설정과 처리 방법'],
+      sourceUrl: 'https://docs.riido.io/issues/intake.md',
+    },
+  },
+  render: (args) => (
+    <section className="w-64 space-y-2">
+      <p className="text-label text-label-assistive">내용이 길 때</p>
+      <SourceBadge {...args} />
+    </section>
+  ),
+};
