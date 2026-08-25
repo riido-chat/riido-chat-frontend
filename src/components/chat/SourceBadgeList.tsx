@@ -6,7 +6,7 @@ type SourceBadgeListProps = {
 
 export default function SourceBadgeList({ citations }: SourceBadgeListProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex max-w-full min-w-0 flex-col gap-1.5">
       {citations.map((citation) => (
         <SourceBadge key={citation.citationNumber} citation={citation} />
       ))}
