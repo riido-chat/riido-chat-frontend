@@ -1,6 +1,6 @@
 import { Button } from '@/components/common/button';
 
-type RecommnededQuestionItemListProps = {
+type RecommendedQuestionItemListProps = {
   questions: string[];
   onQuestionSelect: (question: string) => void;
 };
@@ -8,7 +8,7 @@ type RecommnededQuestionItemListProps = {
 export default function RecommnededQuestionItemList({
   questions,
   onQuestionSelect,
-}: RecommnededQuestionItemListProps) {
+}: RecommendedQuestionItemListProps) {
   return (
     <div className="flex w-88 flex-col gap-2">
       {questions.map((question) => (
