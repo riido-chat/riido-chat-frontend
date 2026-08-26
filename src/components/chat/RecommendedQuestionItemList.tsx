@@ -10,7 +10,7 @@ export default function RecommnededQuestionItemList({
   onQuestionSelect,
 }: RecommendedQuestionItemListProps) {
   return (
-    <div className="flex w-88 flex-col gap-2">
+    <div className="flex flex-col gap-2">
       {questions.map((question) => (
         <Button
           key={question}
