@@ -1,4 +1,4 @@
-import RecommnededQuestionItemList from '@/components/chat/RecommnededQuestionItemList';
+import RecommnededQuestionItemList from '@/components/chat/RecommendedQuestionItemList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/common/tabs';
 import { mockRecommendedQuestionTabs } from '@/mocks/recommendedQuestions';
 
