@@ -39,7 +39,11 @@ export default function RecommendedQuestionSection({
           </TabsContent>
         ))}
       </Tabs>
-      <Button variant="ghost" className="w-fit self-center">
+      <Button
+        variant="ghost"
+        className="w-fit self-center"
+        onClick={() => console.log('구현 예정입니다.')}
+      >
         추천 질문 더보기
       </Button>
     </div>
