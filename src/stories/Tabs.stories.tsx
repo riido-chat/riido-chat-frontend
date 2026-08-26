@@ -18,7 +18,7 @@ export const Default: Story = {
   render: () => (
     <div className="w-md">
       <Tabs defaultValue="team">
-        <TabsList>
+        <TabsList className="self-center">
           <TabsTrigger value="team">팀</TabsTrigger>
           <TabsTrigger value="task">작업</TabsTrigger>
           <TabsTrigger value="meeting">미팅</TabsTrigger>
