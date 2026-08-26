@@ -1,0 +1,48 @@
+export type RecommendedQuestionTab = {
+  value: string;
+  label: string;
+  questions: string[];
+};
+
+export const mockRecommendedQuestionTabs: RecommendedQuestionTab[] = [
+  {
+    value: 'team',
+    label: '팀',
+    questions: [
+      '팀에 새로운 멤버를 초대하려면 어떻게 하나요?',
+      '팀원별 권한은 어디에서 변경할 수 있나요?',
+      '팀 워크스페이스를 여러 개 운영할 수 있나요?',
+      '탈퇴한 팀원이 남긴 작업은 어떻게 되나요?',
+    ],
+  },
+  {
+    value: 'task',
+    label: '작업',
+    questions: [
+      '작업을 생성하고 담당자를 지정하는 방법이 궁금해요.',
+      '작업 상태는 어떤 기준으로 구분되나요?',
+      '하위 작업과 상위 작업을 연결할 수 있나요?',
+      '완료한 작업을 다시 진행 중으로 되돌릴 수 있나요?',
+    ],
+  },
+  {
+    value: 'meeting',
+    label: '미팅',
+    questions: [
+      '미팅 일정을 등록하면 팀원에게 알림이 가나요?',
+      '미팅 노트를 작업과 연결하는 방법이 있나요?',
+      '반복되는 정기 미팅도 등록할 수 있나요?',
+      '미팅 참석자를 나중에 수정할 수 있나요?',
+    ],
+  },
+  {
+    value: 'sprint',
+    label: '스프린트',
+    questions: [
+      '스프린트 기간은 어떻게 설정하나요?',
+      '스프린트에 작업을 추가하거나 제외하려면 어떻게 하나요?',
+      '진행 중인 스프린트의 남은 작업량을 확인할 수 있나요?',
+      '종료된 스프린트의 미완료 작업은 어디로 이동하나요?',
+    ],
+  },
+];
