@@ -40,7 +40,7 @@ export const LongSectionPath: Story = {
     citation: {
       citationNumber: 3,
       documentTitle: '작업 관리',
-      sectionPath: ['작업 관리', '프로젝트 설정', '길이가 긴 하위 작업의 상세 설정과 처리 방법'],
+      sectionPath: ['프로젝트 설정', '길이가 긴 하위 작업의 상세 설정과 처리 방법'],
       sourceUrl: 'https://docs.riido.io/issues/intake.md',
     },
   },
