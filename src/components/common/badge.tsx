@@ -9,7 +9,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        link: 'cursor-pointer bg-button-gray-enabled text-caption text-label-assistive hover:bg-button-gray-hovered hover:text-label-alternative active:font-bold active:text-label-normal [&_svg]:text-icon-gray-enabled [&_svg]:text-label-assistive hover:[&_svg]:text-label-alternative active:[&_svg]:text-label-normal',
+        link: 'cursor-pointer bg-rc-gray-200 text-caption text-label-assistive hover:bg-rc-gray-300 hover:text-label-alternative active:font-bold active:text-label-normal [&_svg]:text-icon-gray-enabled [&_svg]:text-label-assistive hover:[&_svg]:text-label-alternative active:[&_svg]:text-label-normal',
       },
     },
     defaultVariants: {
