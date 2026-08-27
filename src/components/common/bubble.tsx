@@ -57,7 +57,7 @@ function BubbleContent({ className, render, ...props }: useRender.ComponentProps
     props: mergeProps<'div'>(
       {
         className: cn(
-          'w-fit max-w-75 min-w-0 overflow-hidden rounded-xl border border-transparent px-4 py-3 leading-relaxed wrap-break-word group-data-[align=end]/bubble:self-end [button]:text-left [button,a]:transition-colors [button,a]:outline-none [button,a]:focus-visible:border-ring [button,a]:focus-visible:ring-3 [button,a]:focus-visible:ring-ring/50',
+          'w-fit max-w-75 min-w-0 overflow-hidden rounded-xl border border-transparent px-4 py-3 whitespace-pre-wrap leading-relaxed wrap-break-word group-data-[align=end]/bubble:self-end [button]:text-left [button,a]:transition-colors [button,a]:outline-none [button,a]:focus-visible:border-ring [button,a]:focus-visible:ring-3 [button,a]:focus-visible:ring-ring/50',
           className,
         ),
       },
