@@ -3,6 +3,7 @@ import ChatInput from '@/components/chat/ChatInput';
 import ChatTurn from '@/components/chat/ChatTurn';
 import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
+import { cn } from '@/lib/utils';
 import { mockChatResponse } from '@/mocks/chat';
 import type { ChatTurnData } from '@/types/chat.types';
 import { useState } from 'react';
@@ -15,6 +16,7 @@ type ChatView = 'recommendations' | 'chat';
 
 export default function FloatingChat({ onClose }: FloatingChatProps) {
   const [view, setView] = useState<ChatView>('recommendations');
+  const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
 
@@ -30,20 +32,31 @@ export default function FloatingChat({ onClose }: FloatingChatProps) {
   };
 
   const handleBack = () => {
+    if (view === 'recommendations' && isRecommendationExpanded) {
+      setIsRecommendationExpanded(false);
+      return;
+    }
+
     setConversationId(null);
     setChatTurns([]);
+    setIsRecommendationExpanded(false);
     setView('recommendations');
   };
   const isChatView = view === 'chat';
+  const isBackButtonVisible = isChatView || isRecommendationExpanded;
 
   return (
     <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)]">
-      <NavBar onBack={isChatView ? handleBack : undefined} onClose={onClose}>
+      <NavBar onBack={isBackButtonVisible ? handleBack : undefined} onClose={onClose}>
         뤼이도 RAG 챗봇
       </NavBar>
-      <CardContent className="flex flex-col">
+      <CardContent className={cn('flex flex-col', isRecommendationExpanded && 'px-6')}>
         {view === 'recommendations' && (
-          <RecommendedQuestionSection onQuestionSelect={handleSubmit} />
+          <RecommendedQuestionSection
+            onQuestionSelect={handleSubmit}
+            isExpanded={isRecommendationExpanded}
+            onExpand={() => setIsRecommendationExpanded(true)}
+          />
         )}
         {view === 'chat' && (
           <div className="flex flex-col gap-4">

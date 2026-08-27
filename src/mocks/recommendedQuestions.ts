@@ -13,6 +13,7 @@ export const mockRecommendedQuestionTabs: RecommendedQuestionTab[] = [
       '팀원별 권한은 어디에서 변경할 수 있나요?',
       '팀 워크스페이스를 여러 개 운영할 수 있나요?',
       '탈퇴한 팀원이 남긴 작업은 어떻게 되나요?',
+      '팀을 나가려면 어떻게 해야 하나요?',
     ],
   },
   {
@@ -23,6 +24,7 @@ export const mockRecommendedQuestionTabs: RecommendedQuestionTab[] = [
       '작업 상태는 어떤 기준으로 구분되나요?',
       '하위 작업과 상위 작업을 연결할 수 있나요?',
       '완료한 작업을 다시 진행 중으로 되돌릴 수 있나요?',
+      '작업에 파일이나 링크를 첨부할 수 있나요?',
     ],
   },
   {
@@ -33,6 +35,7 @@ export const mockRecommendedQuestionTabs: RecommendedQuestionTab[] = [
       '미팅 노트를 작업과 연결하는 방법이 있나요?',
       '반복되는 정기 미팅도 등록할 수 있나요?',
       '미팅 참석자를 나중에 수정할 수 있나요?',
+      '미팅이 끝난 뒤 회의록을 공유하려면 어떻게 하나요?',
     ],
   },
   {
@@ -43,6 +46,7 @@ export const mockRecommendedQuestionTabs: RecommendedQuestionTab[] = [
       '스프린트에 작업을 추가하거나 제외하려면 어떻게 하나요?',
       '진행 중인 스프린트의 남은 작업량을 확인할 수 있나요?',
       '종료된 스프린트의 미완료 작업은 어디로 이동하나요?',
+      '스프린트 목표는 어디에서 설정하나요?',
     ],
   },
 ];
