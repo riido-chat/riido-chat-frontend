@@ -1,12 +1,8 @@
 import { Badge } from '@/components/common/badge';
+import type { Citation } from '@/types/chat.types';
 import { FaLink } from 'react-icons/fa6';
 
-export type Citation = {
-  citationNumber: number;
-  documentTitle: string;
-  sectionPath: string[];
-  sourceUrl: string;
-};
+export type { Citation } from '@/types/chat.types';
 
 export default function SourceBadge({ citation }: { citation: Citation }) {
   return (
