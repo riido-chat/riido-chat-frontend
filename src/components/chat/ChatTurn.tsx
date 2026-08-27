@@ -1,23 +1,24 @@
 import ChatBubble from '@/components/chat/ChatBubble';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
-import type { Citation } from '@/components/chat/SourceBadge';
 import { MessageGroup } from '@/components/common/message';
+import type { CompletedChatResponse } from '@/types/chat.types';
 import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/common/separator';
 
 type ChatTurnProps = {
   question: string;
-  answerMarkdown: string;
-  citations?: Citation[];
+  response: CompletedChatResponse;
 };
 
-export default function ChatTurn({ question, answerMarkdown, citations = [] }: ChatTurnProps) {
+export default function ChatTurn({ question, response }: ChatTurnProps) {
+  const { answer, citations } = response;
+
   return (
     <MessageGroup>
       <ChatBubble role="user">{question}</ChatBubble>
 
       <ChatBubble role="assistant">
-        <ReactMarkdown>{answerMarkdown}</ReactMarkdown>
+        <ReactMarkdown>{answer.answerMarkdown}</ReactMarkdown>
 
         {citations.length > 0 && (
           <>

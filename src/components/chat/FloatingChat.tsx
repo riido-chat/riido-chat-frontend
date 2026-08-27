@@ -4,6 +4,7 @@ import ChatTurn from '@/components/chat/ChatTurn';
 import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
 import { mockChatResponse } from '@/mocks/chat';
+import type { ChatTurnData } from '@/types/chat.types';
 import { useState } from 'react';
 
 type FloatingChatProps = {
@@ -12,21 +13,24 @@ type FloatingChatProps = {
 
 type ChatView = 'recommendations' | 'chat';
 
-type ChatTurnData = {
-  id: number;
-  question: string;
-};
-
 export default function FloatingChat({ onClose }: FloatingChatProps) {
   const [view, setView] = useState<ChatView>('recommendations');
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
 
   const handleSubmit = (question: string) => {
-    setChatTurns((currentTurns) => [...currentTurns, { id: currentTurns.length, question }]);
+    const response = mockChatResponse;
+
+    if (conversationId === null) {
+      setConversationId(response.conversationId);
+    }
+
+    setChatTurns((currentTurns) => [...currentTurns, { question, response }]);
     setView('chat');
   };
 
   const handleBack = () => {
+    setConversationId(null);
     setChatTurns([]);
     setView('recommendations');
   };
@@ -43,12 +47,11 @@ export default function FloatingChat({ onClose }: FloatingChatProps) {
         )}
         {view === 'chat' && (
           <div className="flex flex-col gap-4">
-            {chatTurns.map((turn) => (
+            {chatTurns.map((turn, index) => (
               <ChatTurn
-                key={turn.id}
+                key={`${turn.response.ragRunId}-${index}`}
                 question={turn.question}
-                answerMarkdown={mockChatResponse.answer.answerMarkdown}
-                citations={mockChatResponse.citations}
+                response={turn.response}
               />
             ))}
           </div>
