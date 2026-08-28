@@ -6,7 +6,15 @@ import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSec
 import { cn } from '@/lib/utils';
 import { mockChatResponse } from '@/mocks/chat';
 import type { ChatTurnData } from '@/types/chat.types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  MessageScrollerProvider,
+  MessageScrollerContent,
+  MessageScrollerViewport,
+  MessageScroller,
+  MessageScrollerItem,
+  useMessageScroller,
+} from '@/components/common/message-scroller';
 
 type FloatingChatProps = {
   onClose: () => void;
@@ -15,10 +23,24 @@ type FloatingChatProps = {
 type ChatView = 'recommendations' | 'chat';
 
 export default function FloatingChat({ onClose }: FloatingChatProps) {
+  return (
+    <MessageScrollerProvider autoScroll>
+      <FloatingChatContent onClose={onClose} />
+    </MessageScrollerProvider>
+  );
+}
+
+function FloatingChatContent({ onClose }: FloatingChatProps) {
   const [view, setView] = useState<ChatView>('recommendations');
   const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
+  const { scrollToEnd } = useMessageScroller();
+
+  useEffect(() => {
+    if (chatTurns.length === 0) return;
+    scrollToEnd({ behavior: 'smooth' });
+  }, [chatTurns.length, scrollToEnd]);
 
   const handleSubmit = (question: string) => {
     const response = mockChatResponse;
@@ -50,26 +72,44 @@ export default function FloatingChat({ onClose }: FloatingChatProps) {
       <NavBar onBack={isBackButtonVisible ? handleBack : undefined} onClose={onClose}>
         뤼이도 RAG 챗봇
       </NavBar>
-      <CardContent className={cn('flex flex-col', isRecommendationExpanded && 'px-6')}>
-        {view === 'recommendations' && (
-          <RecommendedQuestionSection
-            onQuestionSelect={handleSubmit}
-            isExpanded={isRecommendationExpanded}
-            onExpand={() => setIsRecommendationExpanded(true)}
-          />
-        )}
-        {view === 'chat' && (
-          <div className="flex flex-col gap-4">
-            {chatTurns.map((turn, index) => (
-              <ChatTurn
-                key={`${turn.response.ragRunId}-${index}`}
-                question={turn.question}
-                response={turn.response}
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
+
+      <MessageScroller className="flex-1">
+        <MessageScrollerViewport className="flex flex-col scroll-smooth">
+          <CardContent
+            className={cn(
+              'flex min-h-full flex-none flex-col overflow-visible',
+              view === 'recommendations' && !isRecommendationExpanded && 'justify-end',
+              isRecommendationExpanded && 'px-6',
+            )}
+          >
+            <MessageScrollerContent>
+              {view === 'recommendations' && (
+                <MessageScrollerItem
+                  messageId="recommendations"
+                  className={cn(!isRecommendationExpanded && 'mt-auto')}
+                >
+                  <RecommendedQuestionSection
+                    onQuestionSelect={handleSubmit}
+                    isExpanded={isRecommendationExpanded}
+                    onExpand={() => setIsRecommendationExpanded(true)}
+                  />
+                </MessageScrollerItem>
+              )}
+
+              {view === 'chat' &&
+                chatTurns.map((turn, index) => (
+                  <MessageScrollerItem
+                    key={`${turn.response.ragRunId}-${index}`}
+                    messageId={`turn-${turn.response.ragRunId}-${index}`}
+                  >
+                    <ChatTurn question={turn.question} response={turn.response} />
+                  </MessageScrollerItem>
+                ))}
+            </MessageScrollerContent>
+          </CardContent>
+        </MessageScrollerViewport>
+      </MessageScroller>
+
       <CardFooter>
         <ChatInput onSubmit={handleSubmit} />
       </CardFooter>
