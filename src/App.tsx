@@ -1,14 +1,8 @@
-import FloatingChat from '@/components/chat/FloatingChat';
-import { useState } from 'react';
+import { RouterProvider } from 'react-router';
+import { router } from '@/routes/router';
 
 function App() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  return (
-    <main>
-      <button onClick={() => setIsChatOpen((prev) => !prev)}>Open Chat</button>
-      {isChatOpen && <FloatingChat onClose={() => setIsChatOpen((prev) => !prev)} />}
-    </main>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
