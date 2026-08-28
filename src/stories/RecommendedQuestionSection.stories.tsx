@@ -18,6 +18,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     onQuestionSelect: (question) => console.log('Recommended question selected:', question),
+    isExpanded: false,
+    onExpand: () => console.log('Recommended questions expanded'),
   },
   render: (args) => (
     <Card className="h-200 w-md">
