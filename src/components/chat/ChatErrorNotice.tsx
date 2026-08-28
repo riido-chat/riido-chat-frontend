@@ -5,9 +5,9 @@ export default function ChatErrorNotice() {
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <div className="flex w-full items-center gap-3">
-        <Separator className="h-px w-auto flex-1" />
+        <Separator className="h-[1.2px] w-auto flex-1" />
         <IoAlertCircle className="text-label-assistive size-10" />
-        <Separator className="h-px w-auto flex-1" />
+        <Separator className="h-[1.2px] w-auto flex-1" />
       </div>
 
       <div className="text-label-assistive flex flex-col items-center gap-1 text-center">
