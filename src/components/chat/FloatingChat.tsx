@@ -4,7 +4,7 @@ import ChatTurn from '@/components/chat/ChatTurn';
 import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
 import { cn } from '@/lib/utils';
-import { mockChatResponse } from '@/mocks/chat';
+import { postChat, toErrorChatResponse } from '@/api/chat';
 import type { ChatTurnData } from '@/types/chat.types';
 import { useEffect, useState } from 'react';
 import {
@@ -35,6 +35,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
   const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { scrollToEnd } = useMessageScroller();
 
   useEffect(() => {
@@ -42,15 +43,32 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     scrollToEnd({ behavior: 'smooth' });
   }, [chatTurns.length, scrollToEnd]);
 
-  const handleSubmit = (question: string) => {
-    const response = mockChatResponse;
+  const handleSubmit = async (question: string) => {
+    if (isSubmitting) return;
 
-    if (conversationId === null) {
-      setConversationId(response.conversationId);
-    }
+    const turnId = crypto.randomUUID();
 
-    setChatTurns((currentTurns) => [...currentTurns, { question, response }]);
+    setChatTurns((currentTurns) => [...currentTurns, { id: turnId, question, response: null }]);
     setView('chat');
+    setIsSubmitting(true);
+
+    try {
+      const response = await postChat({ question, conversationId });
+
+      // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
+      setConversationId((currentId) => response.conversationId ?? currentId);
+      setChatTurns((currentTurns) =>
+        currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
+      );
+    } catch (error) {
+      setChatTurns((currentTurns) =>
+        currentTurns.map((turn) =>
+          turn.id === turnId ? { ...turn, response: toErrorChatResponse(error) } : turn,
+        ),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -97,11 +115,8 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
               )}
 
               {view === 'chat' &&
-                chatTurns.map((turn, index) => (
-                  <MessageScrollerItem
-                    key={`${turn.response.ragRunId}-${index}`}
-                    messageId={`turn-${turn.response.ragRunId}-${index}`}
-                  >
+                chatTurns.map((turn) => (
+                  <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
                     <ChatTurn question={turn.question} response={turn.response} />
                   </MessageScrollerItem>
                 ))}
@@ -111,7 +126,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
       </MessageScroller>
 
       <CardFooter>
-        <ChatInput onSubmit={handleSubmit} />
+        <ChatInput onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       </CardFooter>
     </Card>
   );
