@@ -56,14 +56,16 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
       const response = await postChat({ question, conversationId });
 
       // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
-      setConversationId((currentId) => response.conversationId ?? currentId);
+      if (response.status !== 'ERROR') {
+        setConversationId((currentId) => response.conversationId ?? currentId);
+      }
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
       );
-    } catch (error) {
+    } catch {
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) =>
-          turn.id === turnId ? { ...turn, response: toErrorChatResponse(error) } : turn,
+          turn.id === turnId ? { ...turn, response: toErrorChatResponse() } : turn,
         ),
       );
     } finally {
