@@ -70,7 +70,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('min-h-0 flex-1 overflow-y-auto px-12 pt-10 pb-32', className)}
+      className={cn('min-h-0 flex-1 overflow-y-auto px-12 pt-10', className)}
       {...props}
     />
   );
@@ -81,7 +81,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-footer"
       className={cn(
-        'bg-background-default shadow-rc-shadow absolute inset-x-0 bottom-0 flex min-h-32 items-center rounded-t-3xl px-6 pt-4 pb-8',
+        'bg-background-default shadow-rc-shadow flex min-h-32 items-center rounded-t-3xl px-6 pt-4 pb-8',
         className,
       )}
       {...props}
