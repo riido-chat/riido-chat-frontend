@@ -84,7 +84,10 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
           >
             <MessageScrollerContent>
               {view === 'recommendations' && (
-                <MessageScrollerItem messageId="recommendations">
+                <MessageScrollerItem
+                  messageId="recommendations"
+                  className={cn(!isRecommendationExpanded && 'mt-auto')}
+                >
                   <RecommendedQuestionSection
                     onQuestionSelect={handleSubmit}
                     isExpanded={isRecommendationExpanded}
