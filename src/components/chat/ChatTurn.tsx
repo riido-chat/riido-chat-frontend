@@ -1,4 +1,5 @@
 import ChatBubble from '@/components/chat/ChatBubble';
+import ChatErrorNotice from '@/components/chat/ChatErrorNotice';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
 import { MessageGroup } from '@/components/common/message';
 import type { ChatResponse } from '@/types/chat.types';
@@ -15,9 +16,13 @@ export default function ChatTurn({ question, response }: ChatTurnProps) {
     <MessageGroup>
       <ChatBubble role="user">{question}</ChatBubble>
 
-      <ChatBubble role="assistant">
-        <AssistantAnswer response={response} />
-      </ChatBubble>
+      {response?.status === 'ERROR' ? (
+        <ChatErrorNotice />
+      ) : (
+        <ChatBubble role="assistant">
+          <AssistantAnswer response={response} />
+        </ChatBubble>
+      )}
     </MessageGroup>
   );
 }
@@ -32,7 +37,7 @@ function AssistantAnswer({ response }: { response: ChatResponse | null }) {
   }
 
   if (response.status === 'ERROR') {
-    return <p>{response.error.message}</p>;
+    return null;
   }
 
   return (
