@@ -5,11 +5,14 @@ import type { KeyboardEvent, SubmitEvent } from 'react';
 
 type ChatInputProps = {
   onSubmit: (message: string) => void;
+  isSubmitting?: boolean;
 };
 
-export default function ChatInput({ onSubmit }: ChatInputProps) {
+export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputProps) {
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmitting) return;
 
     const formData = new FormData(event.currentTarget);
     const message = String(formData.get('message') ?? '').trim();
@@ -47,6 +50,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
           size="icon-lg"
           variant="icon"
           aria-label="메시지 전송"
+          disabled={isSubmitting}
         >
           <IoSend className="size-icon-lg origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
         </Button>

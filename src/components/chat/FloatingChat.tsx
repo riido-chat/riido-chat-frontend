@@ -4,9 +4,9 @@ import ChatTurn from '@/components/chat/ChatTurn';
 import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
 import { cn } from '@/lib/utils';
-import { mockChatResponse } from '@/mocks/chat';
+import { createClientErrorChatResponse, postChat } from '@/api/chat';
 import type { ChatTurnData } from '@/types/chat.types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   MessageScrollerProvider,
   MessageScrollerContent,
@@ -35,6 +35,8 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
   const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { scrollToEnd } = useMessageScroller();
 
   useEffect(() => {
@@ -42,15 +44,38 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     scrollToEnd({ behavior: 'smooth' });
   }, [chatTurns.length, scrollToEnd]);
 
-  const handleSubmit = (question: string) => {
-    const response = mockChatResponse;
+  const handleSubmit = async (question: string) => {
+    if (isSubmitting) return;
 
-    if (conversationId === null) {
-      setConversationId(response.conversationId);
-    }
+    const turnId = crypto.randomUUID();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-    setChatTurns((currentTurns) => [...currentTurns, { question, response }]);
+    setChatTurns((currentTurns) => [...currentTurns, { id: turnId, question, response: null }]);
     setView('chat');
+    setIsSubmitting(true);
+
+    try {
+      const response = await postChat({ question, conversationId }, controller.signal);
+
+      // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
+      if (response.status !== 'ERROR') {
+        setConversationId((currentId) => response.conversationId ?? currentId);
+      }
+      setChatTurns((currentTurns) =>
+        currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
+      );
+    } catch {
+      // 뒤로 가기로 중단된 요청은 오류 응답을 표시하지 않는다.
+      if (controller.signal.aborted) return;
+      setChatTurns((currentTurns) =>
+        currentTurns.map((turn) =>
+          turn.id === turnId ? { ...turn, response: createClientErrorChatResponse() } : turn,
+        ),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -59,6 +84,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
       return;
     }
 
+    abortControllerRef.current?.abort();
     setConversationId(null);
     setChatTurns([]);
     setIsRecommendationExpanded(false);
@@ -97,12 +123,9 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
               )}
 
               {view === 'chat' &&
-                chatTurns.map((turn, index) => (
-                  <MessageScrollerItem
-                    key={`${turn.response.ragRunId}-${index}`}
-                    messageId={`turn-${turn.response.ragRunId}-${index}`}
-                  >
-                    <ChatTurn question={turn.question} response={turn.response} />
+                chatTurns.map((turn) => (
+                  <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
+                    <ChatTurn turn={turn} />
                   </MessageScrollerItem>
                 ))}
             </MessageScrollerContent>
@@ -111,7 +134,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
       </MessageScroller>
 
       <CardFooter>
-        <ChatInput onSubmit={handleSubmit} />
+        <ChatInput onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       </CardFooter>
     </Card>
   );
