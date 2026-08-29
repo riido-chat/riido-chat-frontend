@@ -45,11 +45,14 @@ jobs:
       - name: Build Project Artifacts
         run: vercel build
 
+      - name: Stage build output
+        run: mv .vercel/output vercel-output
+
       - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
           name: vercel-output
-          path: .vercel/output
+          path: vercel-output
           retention-days: 1
 
   deploy:
