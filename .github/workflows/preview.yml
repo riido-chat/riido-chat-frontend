@@ -20,10 +20,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,15 +31,21 @@ jobs:
           cache: npm
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@59
 
-      - name: Pull Vercel Environment (preview)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel pull --yes --environment=preview
+      - name: Write Vercel build settings
+        run: |
+          mkdir -p .vercel
+          printf '%s' '{"projectId":"prj_placeholder","orgId":"team_placeholder","settings":{"framework":"vite","nodeVersion":"24.x"}}' > .vercel/project.json
 
       - name: Build Project Artifacts
-        run: vercel build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::warning::VITE_API_URL 저장소 변수가 비어 있어 API 요청이 상대 경로로 나갑니다."
+          fi
+          vercel build
 
       - name: Stage build output
         run: mv .vercel/output vercel-output
@@ -73,9 +75,9 @@ jobs:
           node-version: 24
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@59
 
-      - name: Restore Vercel project link
+      - name: Write Vercel project link
         run: |
           mkdir -p .vercel
           printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
@@ -95,10 +97,11 @@ jobs:
           echo "preview_url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Comment PR with Preview URL
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          comment_tag: vercel-preview
-          message: |
-            🚀 Preview 서버에 배포가 완료되었습니다! 변경 사항을 확인해주세요.
-
-            👉 ${{ steps.deploy.outputs.preview_url }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.preview_url }}
+        run: |
+          body=$(printf '🚀 Preview 서버에 배포가 완료되었습니다! 변경 사항을 확인해주세요.\n\n👉 %s' "$PREVIEW_URL")
+          gh pr comment "$PR_NUMBER" -R "$GITHUB_REPOSITORY" --body "$body" --edit-last \
+            || gh pr comment "$PR_NUMBER" -R "$GITHUB_REPOSITORY" --body "$body"
