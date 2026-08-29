@@ -4,7 +4,7 @@ import ChatTurn from '@/components/chat/ChatTurn';
 import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
 import { cn } from '@/lib/utils';
-import { postChat, toErrorChatResponse } from '@/api/chat';
+import { createClientErrorChatResponse, postChat } from '@/api/chat';
 import type { ChatTurnData } from '@/types/chat.types';
 import { useEffect, useState } from 'react';
 import {
@@ -65,7 +65,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     } catch {
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) =>
-          turn.id === turnId ? { ...turn, response: toErrorChatResponse() } : turn,
+          turn.id === turnId ? { ...turn, response: createClientErrorChatResponse() } : turn,
         ),
       );
     } finally {
@@ -119,7 +119,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
               {view === 'chat' &&
                 chatTurns.map((turn) => (
                   <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
-                    <ChatTurn question={turn.question} response={turn.response} />
+                    <ChatTurn turn={turn} />
                   </MessageScrollerItem>
                 ))}
             </MessageScrollerContent>

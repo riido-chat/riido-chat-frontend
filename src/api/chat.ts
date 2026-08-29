@@ -11,18 +11,24 @@ export async function postChat(request: ChatRequest): Promise<ChatResponse> {
 
   const data: ChatResponse | null = await response.json().catch(() => null);
 
-  if (!response.ok && data?.status !== 'ERROR') {
-    throw new Error('Chat request failed');
-  }
-
   if (data === null) {
     throw new Error('Chat response is invalid');
+  }
+
+  // 서버가 반환한 ERROR 응답(404, 422, 500, 503) 처리
+  if (data.status === 'ERROR') {
+    return data;
+  }
+
+  if (!response.ok) {
+    throw new Error('Chat request failed');
   }
 
   return data;
 }
 
-export function toErrorChatResponse(): ErrorChatResponse {
+// 클라이언트 측 오류 응답 생성
+export function createClientErrorChatResponse(): ErrorChatResponse {
   return {
     status: 'ERROR',
     conversationId: null,

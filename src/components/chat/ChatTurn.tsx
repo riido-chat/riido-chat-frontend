@@ -2,54 +2,50 @@ import ChatBubble from '@/components/chat/ChatBubble';
 import ChatErrorNotice from '@/components/chat/ChatErrorNotice';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
 import { MessageGroup } from '@/components/common/message';
-import type { ChatResponse } from '@/types/chat.types';
-import ReactMarkdown from 'react-markdown';
 import { Separator } from '@/components/common/separator';
+import type { ChatResponse, ChatTurnData } from '@/types/chat.types';
+import ReactMarkdown from 'react-markdown';
 
 type ChatTurnProps = {
-  question: string;
-  response: ChatResponse | null;
+  turn: ChatTurnData;
 };
 
-export default function ChatTurn({ question, response }: ChatTurnProps) {
+export default function ChatTurn({ turn }: ChatTurnProps) {
   return (
     <MessageGroup>
-      <ChatBubble role="user">{question}</ChatBubble>
-
-      {response?.status === 'ERROR' ? (
-        <ChatErrorNotice />
-      ) : (
-        <ChatBubble role="assistant">
-          <AssistantAnswer response={response} />
-        </ChatBubble>
-      )}
+      <ChatBubble role="user">{turn.question}</ChatBubble>
+      <AssistantBubble response={turn.response} />
     </MessageGroup>
   );
 }
 
-function AssistantAnswer({ response }: { response: ChatResponse | null }) {
+function AssistantBubble({ response }: { response: ChatResponse | null }) {
   if (response === null) {
-    return <p className="animate-pulse">답변을 생성하고 있어요...</p>;
+    return (
+      <ChatBubble role="assistant">
+        <p className="text-rc-iris-500 animate-pulse">...</p>
+      </ChatBubble>
+    );
   }
 
-  if (response.status === 'WITHHELD') {
-    return <p>{response.withheld.message}</p>;
-  }
+  switch (response.status) {
+    case 'ERROR':
+      return <ChatErrorNotice />;
 
-  if (response.status === 'ERROR') {
-    return null;
-  }
+    case 'WITHHELD':
+      return (
+        <ChatBubble role="assistant">
+          <p>{response.withheld.message}</p>
+        </ChatBubble>
+      );
 
-  return (
-    <>
-      <ReactMarkdown>{response.answer.answerMarkdown}</ReactMarkdown>
-
-      {response.citations.length > 0 && (
-        <>
+    case 'COMPLETED':
+      return (
+        <ChatBubble role="assistant">
+          <ReactMarkdown>{response.answer.answerMarkdown}</ReactMarkdown>
           <Separator className="mt-2 mb-3 h-[1.2px]" />
           <SourceBadgeList citations={response.citations} />
-        </>
-      )}
-    </>
-  );
+        </ChatBubble>
+      );
+  }
 }

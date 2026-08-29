@@ -52,5 +52,5 @@ export type ChatResponse = CompletedChatResponse | WithheldChatResponse | ErrorC
 export type ChatTurnData = {
   id: string;
   question: string;
-  response: ChatResponse | null;
+  response: ChatResponse | null; // null이면 응답 대기 중
 };

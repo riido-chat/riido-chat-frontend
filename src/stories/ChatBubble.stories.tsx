@@ -45,7 +45,13 @@ export const QuestionAnswerTurn: Story = {
   },
   render: () => (
     <Card className="w-md p-4">
-      <ChatTurn question="팀 단위 작업은 어떻게 생성하나요?" response={mockChatResponse} />
+      <ChatTurn
+        turn={{
+          id: 'story-turn',
+          question: '팀 단위 작업은 어떻게 생성하나요?',
+          response: mockChatResponse,
+        }}
+      />
     </Card>
   ),
 };
