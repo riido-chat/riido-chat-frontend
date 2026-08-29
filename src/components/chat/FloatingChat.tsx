@@ -6,7 +6,7 @@ import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSec
 import { cn } from '@/lib/utils';
 import { createClientErrorChatResponse, postChat } from '@/api/chat';
 import type { ChatTurnData } from '@/types/chat.types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   MessageScrollerProvider,
   MessageScrollerContent,
@@ -36,6 +36,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { scrollToEnd } = useMessageScroller();
 
   useEffect(() => {
@@ -47,13 +48,15 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     if (isSubmitting) return;
 
     const turnId = crypto.randomUUID();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setChatTurns((currentTurns) => [...currentTurns, { id: turnId, question, response: null }]);
     setView('chat');
     setIsSubmitting(true);
 
     try {
-      const response = await postChat({ question, conversationId });
+      const response = await postChat({ question, conversationId }, controller.signal);
 
       // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
       if (response.status !== 'ERROR') {
@@ -63,6 +66,8 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
         currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
       );
     } catch {
+      // 뒤로 가기로 중단된 요청은 오류 응답을 표시하지 않는다.
+      if (controller.signal.aborted) return;
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) =>
           turn.id === turnId ? { ...turn, response: createClientErrorChatResponse() } : turn,
@@ -79,6 +84,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
       return;
     }
 
+    abortControllerRef.current?.abort();
     setConversationId(null);
     setChatTurns([]);
     setIsRecommendationExpanded(false);
