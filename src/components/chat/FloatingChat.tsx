@@ -17,20 +17,20 @@ import {
 } from '@/components/common/message-scroller';
 
 type FloatingChatProps = {
-  onClose: () => void;
+  onGoChat: () => void;
 };
 
 type ChatView = 'recommendations' | 'chat';
 
-export default function FloatingChat({ onClose }: FloatingChatProps) {
+export default function FloatingChat({ onGoChat }: FloatingChatProps) {
   return (
     <MessageScrollerProvider autoScroll>
-      <FloatingChatContent onClose={onClose} />
+      <FloatingChatContent onGoChat={onGoChat} />
     </MessageScrollerProvider>
   );
 }
 
-function FloatingChatContent({ onClose }: FloatingChatProps) {
+function FloatingChatContent({ onGoChat }: FloatingChatProps) {
   const [view, setView] = useState<ChatView>('recommendations');
   const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -78,7 +78,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     }
   };
 
-  const handleBack = () => {
+  const handleGoHome = () => {
     if (view === 'recommendations' && isRecommendationExpanded) {
       setIsRecommendationExpanded(false);
       return;
@@ -91,11 +91,16 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
     setView('recommendations');
   };
   const isChatView = view === 'chat';
-  const isBackButtonVisible = isChatView || isRecommendationExpanded;
+  // 현재 보고 있는 화면으로 이동하는 버튼은 표시하지 않는다.
+  const isHomeButtonVisible = isChatView || isRecommendationExpanded;
+  const isChatButtonVisible = !isChatView;
 
   return (
     <Card className="h-200 max-h-[calc(100dvh-6rem)] w-md max-w-[calc(100vw-3rem)]">
-      <NavBar onBack={isBackButtonVisible ? handleBack : undefined} onClose={onClose}>
+      <NavBar
+        onGoHome={isHomeButtonVisible ? handleGoHome : undefined}
+        onGoChat={isChatButtonVisible ? onGoChat : undefined}
+      >
         뤼이도 RAG 챗봇
       </NavBar>
 
