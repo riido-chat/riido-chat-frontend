@@ -1,5 +1,6 @@
 import ChatBubble from '@/components/chat/ChatBubble';
 import ChatErrorNotice from '@/components/chat/ChatErrorNotice';
+import ChatWithheldBubble from '@/components/chat/ChatWithheldBubble';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
 import { MessageGroup } from '@/components/common/message';
 import { Separator } from '@/components/common/separator';
@@ -35,7 +36,7 @@ function AssistantBubble({ response }: { response: ChatResponse | null }) {
     case 'WITHHELD':
       return (
         <ChatBubble role="assistant">
-          <p>{response.withheld.message}</p>
+          <ChatWithheldBubble reasonCode={response.withheld.reasonCode} />
         </ChatBubble>
       );
 
