@@ -3,6 +3,7 @@ import { Outlet } from 'react-router';
 import { useState } from 'react';
 import { Button } from '@/components/common/button';
 import { IoClose } from 'react-icons/io5';
+import MessageIcon from '@/assets/icons/MessageIcon.svg?react';
 
 export default function RootLayout() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -18,7 +19,11 @@ export default function RootLayout() {
           className="bg-floating-icon-gradation text-rc-iris-100 hover:opacity-90"
           onClick={() => setIsChatOpen((prev) => !prev)}
         >
-          <IoClose className="size-icon-lg" />
+          {isChatOpen ? (
+            <IoClose className="size-icon-lg" />
+          ) : (
+            <MessageIcon className="size-icon-lg p-0.5" />
+          )}
         </Button>
       </div>
     </main>
