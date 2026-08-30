@@ -139,6 +139,8 @@
 
   /* Shadow */
   --shadow-rc-shadow: 0 -2px 20px 0 color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
+  --shadow-rc-shadow-center: 0 0 20px 0
+    color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
 
   /* Shadcn 호환 토큰 */
   --color-background: var(--color-background-default);
