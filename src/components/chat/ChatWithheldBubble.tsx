@@ -51,6 +51,7 @@ export default function ChatWithheldBubble({ reasonCode }: ChatWithheldBubblePro
         variant="default"
         size="inquiry"
         className="w-full"
+        nativeButton={false}
         render={<a href="https://www.riido.io/" target="_blank" rel="noreferrer" />}
       >
         상담원에게 1:1 문의하기
