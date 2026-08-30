@@ -1,7 +1,7 @@
 import { Textarea } from '@/components/common/textarea';
 import { Button } from '@/components/common/button';
 import { IoSend } from 'react-icons/io5';
-import { FaStop } from 'react-icons/fa';
+import { FaStop } from 'react-icons/fa6';
 
 import { useRef, type KeyboardEvent, type SubmitEvent } from 'react';
 
