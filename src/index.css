@@ -131,12 +131,6 @@
     var(--color-rc-slate-50) 33.81%,
     var(--color-rc-iris-50) 107.53%
   );
-  --background-image-floating-icon-gradation: radial-gradient(
-    50% 50% at 50% 50%,
-    var(--color-rc-iris-500) 0%,
-    var(--color-rc-iris-400) 100%
-  );
-
   /* Shadow */
   --shadow-rc-shadow: 0 -2px 20px 0 color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
   --shadow-rc-shadow-center: 0 0 20px 0
@@ -164,6 +158,29 @@
   --color-border: var(--color-line-normal);
   --color-input: var(--color-line-normal);
   --color-ring: var(--color-button-primary-enabled);
+}
+
+/* 플로팅 버튼 그라데이션의 색상 */
+@property --floating-icon-gradation-from {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #5d4ff9; /* --color-rc-iris-500 */
+}
+
+@property --floating-icon-gradation-to {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #8075fa; /* --color-rc-iris-400 */
+}
+
+/* @theme 토큰으로 정의하면 내부 var()가 :root에서 미리 치환되어
+   요소에서 변수를 덮어써도 반영되지 않으므로, @utility로 정의한다. */
+@utility bg-floating-icon-gradation {
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    var(--floating-icon-gradation-from, var(--color-rc-iris-500)) 0%,
+    var(--floating-icon-gradation-to, var(--color-rc-iris-400)) 100%
+  );
 }
 
 @layer base {
