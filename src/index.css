@@ -38,9 +38,9 @@
   --text-caption--letter-spacing: -0.005em;
 
   /* Icon Size */
-  --size-icon-xs: 1.125rem; /* 18px */
-  --size-icon-sm: 1.5rem; /* 24px */
-  --size-icon-lg: 2rem; /* 32px */
+  --size-icon-sm: 1rem; /* 16px */
+  --size-icon-md: 1.5rem; /* 24px */
+  --size-icon-lg: 2.5rem; /* 40px */
 
   /*? Primitive */
   /* Riido Gray */
@@ -120,15 +120,21 @@
 
   /* ButtonIcon */
   --color-icon-iris-enabled: var(--color-rc-iris-500);
-  --color-icon-gray-enabled: var(--color-rc-gray-600);
   --color-icon-iris-hovered: var(--color-rc-iris-600);
   --color-icon-iris-pressed: var(--color-rc-iris-700);
+  --color-icon-gray-enabled: var(--color-rc-gray-600);
+  --color-icon-gray-hovered: var(--color-rc-gray-800);
 
   /* Gradient */
   --background-image-rc-gradation: linear-gradient(
     94deg,
     var(--color-rc-slate-50) 33.81%,
     var(--color-rc-iris-50) 107.53%
+  );
+  --background-image-floating-icon-gradation: radial-gradient(
+    50% 50% at 50% 50%,
+    var(--color-rc-iris-500) 0%,
+    var(--color-rc-iris-400) 100%
   );
 
   /* Shadow */

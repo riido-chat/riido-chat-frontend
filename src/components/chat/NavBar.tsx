@@ -13,15 +13,15 @@ export default function NavBar({ children, onClose, onBack }: NavBarProps) {
   return (
     <CardHeader>
       {onBack ? (
-        <Button onClick={onBack} aria-label="추천 질문으로 돌아가기" size="icon-sm" variant="icon">
-          <IoIosArrowBack className="size-icon-sm" />
+        <Button onClick={onBack} aria-label="추천 질문으로 돌아가기" size="icon-md" variant="icon">
+          <IoIosArrowBack className="size-icon-md" />
         </Button>
       ) : (
         <div className="size-10" />
       )}
       <CardTitle>{children}</CardTitle>
-      <Button onClick={onClose} aria-label="채팅 닫기" size="icon-sm" variant="icon">
-        <IoClose className="size-icon-sm" />
+      <Button onClick={onClose} aria-label="채팅 닫기" size="icon-md" variant="icon">
+        <IoClose className="size-icon-md" />
       </Button>
     </CardHeader>
   );

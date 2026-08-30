@@ -94,7 +94,7 @@ function FloatingChatContent({ onClose }: FloatingChatProps) {
   const isBackButtonVisible = isChatView || isRecommendationExpanded;
 
   return (
-    <Card className="fixed top-6 right-6 h-200 max-h-[calc(100dvh-3rem)] w-md max-w-[calc(100vw-3rem)]">
+    <Card className="h-200 max-h-[calc(100dvh-6rem)] w-md max-w-[calc(100vw-3rem)]">
       <NavBar onBack={isBackButtonVisible ? handleBack : undefined} onClose={onClose}>
         뤼이도 RAG 챗봇
       </NavBar>
