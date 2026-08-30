@@ -75,10 +75,14 @@ function FloatingChatContent() {
         currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
       );
     } catch {
-      // 홈 이동으로 중단된 요청은 답을 받을 수 없으므로,
-      // 오류로 표시하는 대신 답 없는 질문 턴을 목록에서 제거한다.
+      // 중단 버튼이나 홈 이동으로 멈춘 요청은 답을 받을 수 없으므로,
+      // 질문 턴을 유지한 채 중단 안내 버블로 전환한다.
       if (controller.signal.aborted) {
-        setChatTurns((currentTurns) => currentTurns.filter((turn) => turn.id !== turnId));
+        setChatTurns((currentTurns) =>
+          currentTurns.map((turn) =>
+            turn.id === turnId ? { ...turn, response: { status: 'ABORTED' } } : turn,
+          ),
+        );
         return;
       }
       setChatTurns((currentTurns) =>
@@ -89,6 +93,10 @@ function FloatingChatContent() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStopResponse = () => {
+    abortControllerRef.current?.abort();
   };
 
   // 진행 중인 요청만 중단하고, 대화 세션(대화 내용과 식별자)은 유지한다.
@@ -158,7 +166,11 @@ function FloatingChatContent() {
       </MessageScroller>
 
       <CardFooter>
-        <ChatInput onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <ChatInput
+          onSubmit={handleSubmit}
+          onStop={handleStopResponse}
+          isSubmitting={isSubmitting}
+        />
       </CardFooter>
     </Card>
   );

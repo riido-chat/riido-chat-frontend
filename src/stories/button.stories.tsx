@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { IoIosArrowBack } from 'react-icons/io';
-import { FaStop } from 'react-icons/fa';
+import { FaStop } from 'react-icons/fa6';
 import { Button } from '@/components/common/button';
 import { IoSend } from 'react-icons/io5';
 

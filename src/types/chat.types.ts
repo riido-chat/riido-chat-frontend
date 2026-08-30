@@ -49,8 +49,16 @@ export type ErrorChatResponse = {
 
 export type ChatResponse = CompletedChatResponse | WithheldChatResponse | ErrorChatResponse;
 
+// 사용자가 중단 버튼으로 답변 생성을 멈췄을 때 클라이언트에서만 생성되는 응답
+export type AbortedChatResponse = {
+  status: 'ABORTED';
+};
+
+// 채팅 턴에 표시할 수 있는 응답: 서버 응답에 클라이언트 전용 중단 상태를 더한 것
+export type ChatTurnResponse = ChatResponse | AbortedChatResponse;
+
 export type ChatTurnData = {
   id: string;
   question: string;
-  response: ChatResponse | null; // null이면 응답 대기 중
+  response: ChatTurnResponse | null; // null이면 응답 대기 중
 };
