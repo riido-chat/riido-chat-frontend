@@ -13,7 +13,7 @@ export default function RootLayout() {
       <Outlet />
       <div className="fixed right-6 bottom-6 z-50 flex flex-col items-end gap-4">
         <div className={isChatOpen ? '' : 'hidden'}>
-          <FloatingChat onGoChat={() => setIsChatOpen(false)} />
+          <FloatingChat />
         </div>
         <Button
           variant="icon"
