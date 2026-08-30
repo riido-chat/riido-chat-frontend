@@ -128,6 +128,7 @@ function FloatingChatContent() {
             className={cn(
               'flex min-h-full flex-none flex-col overflow-visible',
               view === 'recommendations' && !isRecommendationExpanded && 'justify-end',
+              view === 'chat' && 'px-6',
               isRecommendationExpanded && 'px-6',
             )}
           >
