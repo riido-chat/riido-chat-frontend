@@ -16,13 +16,13 @@ function BubbleGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 const bubbleVariants = cva(
-  'group/bubble relative flex w-fit max-w-[80%] min-w-0 flex-col gap-1 group-data-[align=end]/message:self-end data-[align=end]:self-end data-[variant=ghost]:max-w-full',
+  'group/bubble relative flex w-fit max-w-[80%] min-w-0 flex-col gap-1 *:data-[slot=bubble-content]:rounded-md group-data-[align=end]/message:self-end data-[align=end]:self-end data-[variant=ghost]:max-w-full',
   {
     variants: {
       variant: {
         user: 'font-medium *:data-[slot=bubble-content]:bg-primary *:data-[slot=bubble-content]:text-primary-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-primary/80',
         assistant:
-          '*:data-[slot=bubble-content]:border-[1.2px] *:data-[slot=bubble-content]:border-line-normal *:data-[slot=bubble-content]:bg-[#f3f4f6] *:data-[slot=bubble-content]:text-label-normal *:data-[slot=bubble-content]:rounded-md text-body-2 font-normal',
+          '*:data-[slot=bubble-content]:border-[1.2px] *:data-[slot=bubble-content]:border-line-normal *:data-[slot=bubble-content]:bg-[#f3f4f6] *:data-[slot=bubble-content]:text-label-normal text-body-2 font-normal',
       },
     },
     defaultVariants: {
@@ -57,7 +57,7 @@ function BubbleContent({ className, render, ...props }: useRender.ComponentProps
     props: mergeProps<'div'>(
       {
         className: cn(
-          'w-fit max-w-75 min-w-0 overflow-hidden rounded-xl border border-transparent px-4 py-3 whitespace-pre-wrap leading-relaxed wrap-break-word group-data-[align=end]/bubble:self-end [button]:text-left [button,a]:transition-colors [button,a]:outline-none [button,a]:focus-visible:border-ring [button,a]:focus-visible:ring-3 [button,a]:focus-visible:ring-ring/50',
+          'w-fit max-w-75 min-w-0 overflow-hidden border border-transparent px-4 py-3 whitespace-pre-wrap leading-relaxed wrap-break-word group-data-[align=end]/bubble:self-end [button]:text-left [button,a]:transition-colors [button,a]:outline-none [button,a]:focus-visible:border-ring [button,a]:focus-visible:ring-3 [button,a]:focus-visible:ring-ring/50',
           className,
         ),
       },
