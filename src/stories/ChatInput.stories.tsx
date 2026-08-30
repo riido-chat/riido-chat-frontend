@@ -17,6 +17,19 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     onSubmit: (message) => console.log('Message submitted:', message),
+    onStop: () => console.log('Response stopped'),
+  },
+  render: (args) => (
+    <div className="w-md">
+      <ChatInput {...args} />
+    </div>
+  ),
+};
+
+export const Submitting: Story = {
+  args: {
+    ...Default.args,
+    isSubmitting: true,
   },
   render: (args) => (
     <div className="w-md">

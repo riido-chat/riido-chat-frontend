@@ -1,14 +1,17 @@
 import { Textarea } from '@/components/common/textarea';
 import { Button } from '@/components/common/button';
 import { IoSend } from 'react-icons/io5';
+import { FaStop } from 'react-icons/fa';
+
 import { useRef, type KeyboardEvent, type SubmitEvent } from 'react';
 
 type ChatInputProps = {
   onSubmit: (message: string) => void;
+  onStop: () => void;
   isSubmitting?: boolean;
 };
 
-export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputProps) {
+export default function ChatInput({ onSubmit, onStop, isSubmitting = false }: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -52,14 +55,18 @@ export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputP
           ref={inputRef}
         />
         <Button
-          type="submit"
-          className="text-icon-iris-enabled bg-button-tertiary-enabled hover:bg-button-tertiary-pressed active:text-button-primary-pressed disabled:bg-button-gray-pressed disabled:text-button-disabled self-end"
+          type={isSubmitting ? 'button' : 'submit'}
+          onClick={isSubmitting ? onStop : undefined}
+          className="text-icon-iris-enabled bg-button-tertiary-enabled hover:bg-button-tertiary-pressed active:text-button-primary-pressed self-end"
           size="icon-md"
           variant="icon"
-          aria-label="메시지 전송"
-          disabled={isSubmitting}
+          aria-label={isSubmitting ? '답변 생성 중단' : '메시지 전송'}
         >
-          <IoSend className="size-icon-md origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
+          {isSubmitting ? (
+            <FaStop className="size-icon-md" />
+          ) : (
+            <IoSend className="size-icon-md origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
+          )}
         </Button>
       </form>
       <p className="text-caption text-label-assistive text-center font-normal">

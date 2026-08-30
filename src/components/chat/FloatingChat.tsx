@@ -91,6 +91,10 @@ function FloatingChatContent() {
     }
   };
 
+  const handleStopResponse = () => {
+    abortControllerRef.current?.abort();
+  };
+
   // 진행 중인 요청만 중단하고, 대화 세션(대화 내용과 식별자)은 유지한다.
   const handleGoHome = () => {
     if (view === 'recommendations' && isRecommendationExpanded) {
@@ -158,7 +162,11 @@ function FloatingChatContent() {
       </MessageScroller>
 
       <CardFooter>
-        <ChatInput onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <ChatInput
+          onSubmit={handleSubmit}
+          onStop={handleStopResponse}
+          isSubmitting={isSubmitting}
+        />
       </CardFooter>
     </Card>
   );
