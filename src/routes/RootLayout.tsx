@@ -20,6 +20,8 @@ export default function RootLayout() {
           size="icon-lg"
           className="bg-floating-icon-gradation text-rc-iris-100 active:text-rc-gray-100 transition-[all,--floating-icon-gradation-from,--floating-icon-gradation-to] hover:[--floating-icon-gradation-from:var(--color-rc-iris-500)] hover:[--floating-icon-gradation-to:var(--color-rc-iris-500)] active:[--floating-icon-gradation-from:var(--color-rc-iris-600)] active:[--floating-icon-gradation-to:var(--color-rc-iris-600)]"
           onClick={() => setIsChatOpen((prev) => !prev)}
+          aria-label={isChatOpen ? '채팅창 접기' : '채팅창 펼치기'}
+          aria-expanded={isChatOpen}
         >
           {isChatOpen ? (
             <IoClose className="size-icon-lg" />
