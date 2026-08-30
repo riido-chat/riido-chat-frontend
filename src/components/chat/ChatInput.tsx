@@ -1,7 +1,7 @@
 import { Textarea } from '@/components/common/textarea';
 import { Button } from '@/components/common/button';
 import { IoSend } from 'react-icons/io5';
-import type { KeyboardEvent, SubmitEvent } from 'react';
+import { useRef, type KeyboardEvent, type SubmitEvent } from 'react';
 
 type ChatInputProps = {
   onSubmit: (message: string) => void;
@@ -9,6 +9,8 @@ type ChatInputProps = {
 };
 
 export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputProps) {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -17,10 +19,14 @@ export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputP
     const formData = new FormData(event.currentTarget);
     const message = String(formData.get('message') ?? '').trim();
 
-    if (!message) return;
+    if (!message) {
+      inputRef.current?.focus();
+      return;
+    }
 
     onSubmit(message);
     event.currentTarget.reset();
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -43,6 +49,7 @@ export default function ChatInput({ onSubmit, isSubmitting = false }: ChatInputP
           aria-label="메시지 입력"
           placeholder="어떤 것이 궁금하세요?"
           onKeyDown={handleKeyDown}
+          ref={inputRef}
         />
         <Button
           type="submit"
