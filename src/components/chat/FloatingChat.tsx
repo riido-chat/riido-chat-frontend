@@ -5,7 +5,7 @@ import NavBar from '@/components/chat/NavBar';
 import RecommendedQuestionSection from '@/components/chat/RecommendedQuestionSection';
 import { cn } from '@/lib/utils';
 import { createClientErrorChatResponse, postChat } from '@/api/chat';
-import type { ChatTurnData } from '@/types/chat.types';
+import type { ChatTurnData, FeedbackRating } from '@/types/chat.types';
 import { useEffect, useRef, useState } from 'react';
 import {
   MessageScrollerProvider,
@@ -54,9 +54,12 @@ function FloatingChatContent() {
 
     if (isNewConversation) {
       setConversationId(null);
-      setChatTurns([{ id: turnId, question, response: null }]);
+      setChatTurns([{ id: turnId, question, response: null, rating: null }]);
     } else {
-      setChatTurns((currentTurns) => [...currentTurns, { id: turnId, question, response: null }]);
+      setChatTurns((currentTurns) => [
+        ...currentTurns,
+        { id: turnId, question, response: null, rating: null },
+      ]);
     }
     setView('chat');
     setIsSubmitting(true);
@@ -97,6 +100,12 @@ function FloatingChatContent() {
 
   const handleStopResponse = () => {
     abortControllerRef.current?.abort();
+  };
+
+  const handleRatingChange = (turnId: string, rating: FeedbackRating | null) => {
+    setChatTurns((currentTurns) =>
+      currentTurns.map((turn) => (turn.id === turnId ? { ...turn, rating } : turn)),
+    );
   };
 
   // 진행 중인 요청만 중단하고, 대화 세션(대화 내용과 식별자)은 유지한다.
@@ -157,7 +166,10 @@ function FloatingChatContent() {
               {view === 'chat' &&
                 chatTurns.map((turn) => (
                   <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
-                    <ChatTurn turn={turn} />
+                    <ChatTurn
+                      turn={turn}
+                      onRatingChange={(rating) => handleRatingChange(turn.id, rating)}
+                    />
                   </MessageScrollerItem>
                 ))}
             </MessageScrollerContent>

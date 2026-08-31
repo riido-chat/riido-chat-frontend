@@ -1,16 +1,17 @@
 import { Button } from '@/components/common/button';
 import { deleteFeedback, putFeedback } from '@/api/chat';
 import type { FeedbackRating } from '@/types/chat.types';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import { cn } from '@/lib/utils';
 
 type ChatFeedbackProps = {
   ragRunId: string;
+  rating: FeedbackRating | null;
+  onRatingChange: (rating: FeedbackRating | null) => void;
 };
 
-export default function ChatFeedback({ ragRunId }: ChatFeedbackProps) {
-  const [rating, setRating] = useState<FeedbackRating | null>(null);
+export default function ChatFeedback({ ragRunId, rating, onRatingChange }: ChatFeedbackProps) {
   // 연타로 요청이 겹칠 때, 늦게 도착한 이전 응답이 최신 상태를 덮어쓰지 않게 한다.
   const requestSeqRef = useRef(0);
 
@@ -20,7 +21,7 @@ export default function ChatFeedback({ ragRunId }: ChatFeedbackProps) {
     const selectedRating = prevRating === nextRating ? null : nextRating;
     const seq = ++requestSeqRef.current;
 
-    setRating(selectedRating);
+    onRatingChange(selectedRating);
 
     try {
       const feedback =
@@ -28,11 +29,9 @@ export default function ChatFeedback({ ragRunId }: ChatFeedbackProps) {
           ? await deleteFeedback(ragRunId)
           : await putFeedback(ragRunId, selectedRating);
 
-      // 서버에 저장된 최종 평가값으로 버튼 상태를 동기화
-      if (seq === requestSeqRef.current) setRating(feedback.rating);
+      if (seq === requestSeqRef.current) onRatingChange(feedback.rating);
     } catch {
-      // 전송에 실패하면 이전 평가로 되돌려 사용자가 다시 시도할 수 있게 한다.
-      if (seq === requestSeqRef.current) setRating(prevRating);
+      if (seq === requestSeqRef.current) onRatingChange(prevRating);
     }
   };
 

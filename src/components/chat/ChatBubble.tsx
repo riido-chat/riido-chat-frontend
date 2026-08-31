@@ -3,16 +3,25 @@ import * as React from 'react';
 import ChatFeedback from '@/components/chat/ChatFeedback';
 import { Bubble, BubbleContent } from '@/components/common/bubble';
 import { Message, MessageContent, MessageFooter } from '@/components/common/message';
+import type { FeedbackRating } from '@/types/chat.types';
 
 type ChatBubbleProps = React.ComponentProps<'div'> & {
   role: 'user' | 'assistant';
-  // 답변 평가에 쓰이는 서버 측 식별자. 전달한 어시스턴트 버블에만 피드백 UI가 붙는다.
   ragRunId?: string;
+  rating?: FeedbackRating | null;
+  onRatingChange?: (rating: FeedbackRating | null) => void;
 };
 
-export default function ChatBubble({ role, ragRunId, children, ...props }: ChatBubbleProps) {
+export default function ChatBubble({
+  role,
+  ragRunId,
+  rating = null,
+  onRatingChange,
+  children,
+  ...props
+}: ChatBubbleProps) {
   const isUser = role === 'user';
-  const isFeedbackVisible = !isUser && ragRunId !== undefined;
+  const isFeedbackVisible = !isUser && ragRunId !== undefined && onRatingChange !== undefined;
 
   return (
     <Message align={isUser ? 'end' : 'start'} {...props}>
@@ -22,7 +31,7 @@ export default function ChatBubble({ role, ragRunId, children, ...props }: ChatB
         </Bubble>
         {isFeedbackVisible && (
           <MessageFooter className="px-0">
-            <ChatFeedback ragRunId={ragRunId} />
+            <ChatFeedback ragRunId={ragRunId} rating={rating} onRatingChange={onRatingChange} />
           </MessageFooter>
         )}
       </MessageContent>

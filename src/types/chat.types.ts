@@ -61,11 +61,11 @@ export type ChatTurnData = {
   id: string;
   question: string;
   response: ChatTurnResponse | null; // null이면 응답 대기 중
+  rating: FeedbackRating | null;
 };
 
 export type FeedbackRating = 'GOOD' | 'BAD';
 
-// PUT(등록·변경)과 DELETE(해제) 모두 저장된 최종 평가값을 반환한다. 해제 시 rating은 null.
 export type FeedbackResponse = {
   ragRunId: string;
   rating: FeedbackRating | null;
