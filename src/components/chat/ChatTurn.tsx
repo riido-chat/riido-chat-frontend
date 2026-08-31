@@ -40,16 +40,17 @@ function AssistantBubble({ response }: { response: ChatTurnResponse | null }) {
         </ChatBubble>
       );
 
+    // WITHHELD도 평가 대상이다. 보류 사유가 적절했는지 사용자에게 피드백을 받는다.
     case 'WITHHELD':
       return (
-        <ChatBubble role="assistant">
+        <ChatBubble role="assistant" ragRunId={response.ragRunId}>
           <ChatWithheldBubble reasonCode={response.withheld.reasonCode} />
         </ChatBubble>
       );
 
     case 'COMPLETED':
       return (
-        <ChatBubble role="assistant">
+        <ChatBubble role="assistant" ragRunId={response.ragRunId}>
           <ReactMarkdown>{response.answer.answerMarkdown}</ReactMarkdown>
           <Separator className="mt-2 mb-3 h-[1.2px]" />
           <SourceBadgeList citations={response.citations} />

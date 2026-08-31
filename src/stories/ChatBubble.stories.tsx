@@ -33,6 +33,11 @@ export const IndividualMessages: Story = {
         <ChatBubble role="assistant">
           <ReactMarkdown>{mockChatResponse.answer.answerMarkdown}</ReactMarkdown>
         </ChatBubble>
+
+        <p className="text-label text-label-assistive">챗봇 답변 (피드백 포함)</p>
+        <ChatBubble role="assistant" ragRunId="story-rag-run">
+          <ReactMarkdown>{mockChatResponse.answer.answerMarkdown}</ReactMarkdown>
+        </ChatBubble>
       </div>
     </Card>
   ),
