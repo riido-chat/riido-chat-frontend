@@ -36,27 +36,32 @@ export default function ChatFeedback({ ragRunId, rating, onRatingChange }: ChatF
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label="답변이 도움이 되었어요"
-        aria-pressed={rating === 'GOOD'}
-        onClick={() => handleRate('GOOD')}
-      >
-        <FiThumbsUp className={cn('size-icon-sm', rating === 'GOOD' && 'text-icon-iris-pressed')} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label="답변이 도움이 되지 않았어요"
-        aria-pressed={rating === 'BAD'}
-        onClick={() => handleRate('BAD')}
-      >
-        <FiThumbsDown
-          className={cn('size-icon-sm', rating === 'BAD' && 'text-icon-iris-pressed')}
-        />
-      </Button>
+    <div className="flex flex-col gap-0.5">
+      <p className="text-caption text-label-alternative font-medium">답변이 도움 되셨나요?</p>
+      <section className="flex items-center gap-0.5">
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label="답변이 도움이 되었어요"
+          aria-pressed={rating === 'GOOD'}
+          onClick={() => handleRate('GOOD')}
+        >
+          <FiThumbsUp
+            className={cn('size-icon-sm', rating === 'GOOD' && 'text-icon-iris-pressed')}
+          />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label="답변이 도움이 되지 않았어요"
+          aria-pressed={rating === 'BAD'}
+          onClick={() => handleRate('BAD')}
+        >
+          <FiThumbsDown
+            className={cn('size-icon-sm', rating === 'BAD' && 'text-icon-iris-pressed')}
+          />
+        </Button>
+      </section>
     </div>
   );
 }
