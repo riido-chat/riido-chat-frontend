@@ -1,4 +1,10 @@
-import type { ChatRequest, ChatResponse, ErrorChatResponse } from '@/types/chat.types';
+import type {
+  ChatRequest,
+  ChatResponse,
+  ErrorChatResponse,
+  FeedbackRating,
+  FeedbackResponse,
+} from '@/types/chat.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -41,4 +47,41 @@ export function createClientErrorChatResponse(): ErrorChatResponse {
     },
     citations: [],
   };
+}
+
+// 답변 평가 등록 및 변경. 같은 값 재전송은 서버에서 멱등 처리된다.
+export async function putFeedback(
+  ragRunId: string,
+  rating: FeedbackRating,
+  signal?: AbortSignal,
+): Promise<FeedbackResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/chat/${ragRunId}/feedback`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error('Feedback request failed');
+  }
+
+  return response.json();
+}
+
+// 답변 평가 해제. 평가가 없는 상태에서 호출해도 동일 응답(멱등)을 받는다.
+export async function deleteFeedback(
+  ragRunId: string,
+  signal?: AbortSignal,
+): Promise<FeedbackResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/chat/${ragRunId}/feedback`, {
+    method: 'DELETE',
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error('Feedback request failed');
+  }
+
+  return response.json();
 }

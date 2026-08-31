@@ -61,4 +61,12 @@ export type ChatTurnData = {
   id: string;
   question: string;
   response: ChatTurnResponse | null; // null이면 응답 대기 중
+  rating: FeedbackRating | null;
+};
+
+export type FeedbackRating = 'GOOD' | 'BAD';
+
+export type FeedbackResponse = {
+  ragRunId: string;
+  rating: FeedbackRating | null;
 };

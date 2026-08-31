@@ -54,7 +54,7 @@ export default function ChatWithheldBubble({ reasonCode }: ChatWithheldBubblePro
         nativeButton={false}
         render={<a href="https://www.riido.io/" target="_blank" rel="noreferrer" />}
       >
-        상담원에게 1:1 문의하기
+        채널톡에서 1:1 문의하기
       </Button>
     </div>
   );
