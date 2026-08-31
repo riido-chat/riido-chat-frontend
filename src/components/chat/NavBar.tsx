@@ -13,7 +13,13 @@ export default function NavBar({ children, onGoHome, onEndChat }: NavBarProps) {
   return (
     <CardHeader>
       {onGoHome ? (
-        <Button onClick={onGoHome} aria-label="홈으로 돌아가기" size="icon-md" variant="icon">
+        <Button
+          onClick={onGoHome}
+          aria-label="홈으로 돌아가기"
+          title="홈으로 돌아가기"
+          size="icon-md"
+          variant="icon"
+        >
           <GoHome className="size-icon-md" />
         </Button>
       ) : (
@@ -21,7 +27,13 @@ export default function NavBar({ children, onGoHome, onEndChat }: NavBarProps) {
       )}
       <CardTitle>{children}</CardTitle>
       {onEndChat ? (
-        <Button onClick={onEndChat} aria-label="대화 종료하기" size="icon-md" variant="icon">
+        <Button
+          onClick={onEndChat}
+          aria-label="새 대화 시작하기"
+          title="새 대화 시작하기"
+          size="icon-md"
+          variant="icon"
+        >
           <EndChatIcon className="size-icon-md" />
         </Button>
       ) : (
