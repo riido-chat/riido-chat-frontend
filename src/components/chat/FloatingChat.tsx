@@ -96,6 +96,8 @@ function FloatingChatContent() {
     setChatTurns((currentTurns) =>
       currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response: null } : turn)),
     );
+    // 턴 개수가 유지되어 자동스크롤 X -> ScrollToEnd 추가
+    scrollToEnd({ behavior: 'smooth' });
 
     await requestChat(turnId, question);
   };
