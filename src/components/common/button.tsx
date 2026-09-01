@@ -12,7 +12,7 @@ const buttonVariants = cva(
           'bg-button-primary-enabled text-rc-gray-0 text-label hover:bg-button-primary-hovered active:bg-button-primary-pressed',
         icon: 'rounded-full bg-transparent text-icon-gray-enabled hover:bg-button-gray-enabled active:text-icon-gray-hovered',
         ghost:
-          'rounded-full text-label-assistive hover:bg-background-tertiary active:text-label-alternative aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative',
+          'text-caption font-normal rounded-full text-label-assistive hover:text-label-alternative hover:bg-button-gray-enabled active:bg-button-gray-hovered active:text-label-alternative aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative has-data-icon:font-normal',
         link: 'text-button-primary-enabled underline-offset-4 hover:underline',
         outline:
           'border-[0.8px] border-line-normal text-label text-label-alternative bg-button-tertiary-enabled hover:bg-button-tertiary-hovered hover:text-label-normal hover:font-bold active:bg-button-tertiary-pressed aria-expanded:bg-muted aria-expanded:text-foreground',
@@ -21,9 +21,10 @@ const buttonVariants = cva(
         default:
           'h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
         xs: "h-6 gap-1 px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        sm: 'px-3 py-1.5 gap-1 has-data-[icon=inline-end]:pr-1.5',
         lg: 'h-10 gap-1.5 px-4 py-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
         xl: 'h-11 px-4 py-3',
+        withIcon: 'px-3 py-1.5 gap-1.5',
         inquiry: 'h-10 px-4 py-2.5',
         'icon-xs': 'size-8 p-2',
         'icon-sm': 'size-8 p-2',

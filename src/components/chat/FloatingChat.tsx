@@ -42,26 +42,16 @@ function FloatingChatContent() {
     scrollToEnd({ behavior: 'smooth' });
   }, [chatTurns.length, scrollToEnd]);
 
-  const handleSubmit = async (question: string) => {
-    if (isSubmitting) return;
-
-    const turnId = crypto.randomUUID();
+  const requestChat = async (turnId: string, question: string) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
-    setChatTurns((currentTurns) => [
-      ...currentTurns,
-      { id: turnId, question, response: null, rating: null },
-    ]);
     setIsSubmitting(true);
 
     try {
       const response = await postChat({ question, conversationId }, controller.signal);
 
       // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
-      if (response.status !== 'ERROR') {
-        setConversationId((currentId) => response.conversationId ?? currentId);
-      }
+      setConversationId((currentId) => response.conversationId ?? currentId);
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
       );
@@ -82,7 +72,34 @@ function FloatingChatContent() {
       );
     } finally {
       setIsSubmitting(false);
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
     }
+  };
+
+  const handleSubmit = async (question: string) => {
+    if (isSubmitting) return;
+
+    const turnId = crypto.randomUUID();
+    setChatTurns((currentTurns) => [
+      ...currentTurns,
+      { id: turnId, question, response: null, rating: null },
+    ]);
+
+    await requestChat(turnId, question);
+  };
+
+  const handleRetry = async (turnId: string, question: string) => {
+    if (isSubmitting) return;
+
+    setChatTurns((currentTurns) =>
+      currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response: null } : turn)),
+    );
+    // 턴 개수가 유지되어 자동스크롤 X -> ScrollToEnd 추가
+    scrollToEnd({ behavior: 'smooth' });
+
+    await requestChat(turnId, question);
   };
 
   const handleStopResponse = () => {
@@ -95,7 +112,7 @@ function FloatingChatContent() {
     );
   };
 
-  // 진행 중인 요청을 중단하고 대화 세션(대화 내용과 식별자)을 폐기한 뒤 홈 화면으로 돌아간다.
+  // 진행 중인 요청을 중단하고 대화 세션을 폐기한 뒤 홈 화면으로 돌아간다.
   const handleEndChat = () => {
     abortControllerRef.current?.abort();
     setChatTurns([]);
@@ -139,11 +156,18 @@ function FloatingChatContent() {
                 </MessageScrollerItem>
               )}
 
-              {chatTurns.map((turn) => (
+              {chatTurns.map((turn, index) => (
                 <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
                   <ChatTurn
                     turn={turn}
                     onRatingChange={(rating) => handleRatingChange(turn.id, rating)}
+                    // 마지막 턴이 아닌 질문을 재시도하면 서버가 인식하는 대화 순서가 어긋나므로,
+                    // 재시도는 마지막 턴에서만 허용한다.
+                    onRetry={
+                      index === chatTurns.length - 1
+                        ? () => handleRetry(turn.id, turn.question)
+                        : undefined
+                    }
                   />
                 </MessageScrollerItem>
               ))}

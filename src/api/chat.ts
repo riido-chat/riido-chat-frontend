@@ -44,6 +44,7 @@ export function createClientErrorChatResponse(): ErrorChatResponse {
     error: {
       code: 'CLIENT_ERROR',
       message: '',
+      retryable: false,
     },
     citations: [],
   };

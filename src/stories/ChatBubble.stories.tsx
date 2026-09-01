@@ -4,7 +4,7 @@ import ChatBubble from '@/components/chat/ChatBubble';
 import ChatTurn from '@/components/chat/ChatTurn';
 import { Card } from '@/components/common/card';
 import { mockChatResponse } from '@/mocks/chat';
-import type { FeedbackRating } from '@/types/chat.types';
+import type { ErrorChatResponse, FeedbackRating } from '@/types/chat.types';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
@@ -48,6 +48,44 @@ function ChatTurnPreview() {
         rating,
       }}
       onRatingChange={setRating}
+      onRetry={() => console.log('Retry requested')}
+    />
+  );
+}
+
+const retryableErrorResponse = {
+  status: 'ERROR',
+  conversationId: null,
+  ragRunId: null,
+  answer: null,
+  error: {
+    code: 'SERVICE_UNAVAILABLE',
+    message: '일시적인 오류가 발생했습니다.',
+    retryable: true,
+  },
+  citations: [],
+} satisfies ErrorChatResponse;
+
+const nonRetryableErrorResponse = {
+  ...retryableErrorResponse,
+  error: {
+    code: 'INVALID_REQUEST',
+    message: '요청을 처리할 수 없습니다.',
+    retryable: false,
+  },
+} satisfies ErrorChatResponse;
+
+function ErrorTurnPreview({ response }: { response: ErrorChatResponse }) {
+  return (
+    <ChatTurn
+      turn={{
+        id: `error-${response.error.code}`,
+        question: '업무 위임 작업은 어떻게 생성하나요?',
+        response,
+        rating: null,
+      }}
+      onRatingChange={() => undefined}
+      onRetry={() => console.log('Retry requested')}
     />
   );
 }
@@ -62,11 +100,6 @@ export const IndividualMessages: Story = {
       <div className="flex flex-col gap-4">
         <p className="text-label text-label-assistive">사용자 질문</p>
         <ChatBubble role="user">팀 단위 작업은 어떻게 생성하나요?</ChatBubble>
-
-        <p className="text-label text-label-assistive">챗봇 답변</p>
-        <ChatBubble role="assistant">
-          <ReactMarkdown>{mockChatResponse.answer.answerMarkdown}</ReactMarkdown>
-        </ChatBubble>
 
         <p className="text-label text-label-assistive">챗봇 답변 (피드백 포함)</p>
         <FeedbackBubblePreview />
@@ -83,6 +116,28 @@ export const QuestionAnswerTurn: Story = {
   render: () => (
     <Card className="w-md p-4">
       <ChatTurnPreview />
+    </Card>
+  ),
+};
+
+export const ErrorStates: Story = {
+  args: {
+    role: 'assistant',
+    children: null,
+  },
+  render: () => (
+    <Card className="w-md p-4">
+      <div className="flex flex-col gap-8">
+        <section className="flex flex-col gap-2">
+          <p className="text-label text-label-assistive">재시도 가능</p>
+          <ErrorTurnPreview response={retryableErrorResponse} />
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <p className="text-label text-label-assistive">재시도 불가</p>
+          <ErrorTurnPreview response={nonRetryableErrorResponse} />
+        </section>
+      </div>
     </Card>
   ),
 };

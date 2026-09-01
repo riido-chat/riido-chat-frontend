@@ -43,6 +43,7 @@ export type ErrorChatResponse = {
   error: {
     code: string;
     message: string;
+    retryable: boolean;
   };
   citations: Citation[];
 };
