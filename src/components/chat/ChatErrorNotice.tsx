@@ -6,7 +6,7 @@ import type { ErrorChatResponse } from '@/types/chat.types';
 
 type ChatErrorNoticeProps = {
   isRetryable: ErrorChatResponse['error']['retryable'];
-  onRetry: () => void;
+  onRetry?: () => void;
 };
 
 export default function ChatErrorNotice({ isRetryable, onRetry }: ChatErrorNoticeProps) {
@@ -25,7 +25,7 @@ export default function ChatErrorNotice({ isRetryable, onRetry }: ChatErrorNotic
         </p>
       </section>
 
-      {isRetryable && (
+      {isRetryable && onRetry && (
         <Button variant="ghost" size="withIcon" onClick={onRetry}>
           <IoMdRefresh data-icon="inline-start" className="size-icon-sm" /> 다시 시도하기
         </Button>

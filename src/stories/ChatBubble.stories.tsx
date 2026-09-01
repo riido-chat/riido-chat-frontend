@@ -48,7 +48,7 @@ function ChatTurnPreview() {
         rating,
       }}
       onRatingChange={setRating}
-      onRetry={(turnId, question) => console.log('Retry requested:', { turnId, question })}
+      onRetry={() => console.log('Retry requested')}
     />
   );
 }
@@ -85,7 +85,7 @@ function ErrorTurnPreview({ response }: { response: ErrorChatResponse }) {
         rating: null,
       }}
       onRatingChange={() => undefined}
-      onRetry={(turnId, question) => console.log('Retry requested:', { turnId, question })}
+      onRetry={() => console.log('Retry requested')}
     />
   );
 }

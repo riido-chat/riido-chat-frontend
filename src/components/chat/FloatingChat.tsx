@@ -112,7 +112,7 @@ function FloatingChatContent() {
     );
   };
 
-  // 진행 중인 요청을 중단하고 대화 세션(대화 내용과 식별자)을 폐기한 뒤 홈 화면으로 돌아간다.
+  // 진행 중인 요청을 중단하고 대화 세션을 폐기한 뒤 홈 화면으로 돌아간다.
   const handleEndChat = () => {
     abortControllerRef.current?.abort();
     setChatTurns([]);
@@ -156,12 +156,18 @@ function FloatingChatContent() {
                 </MessageScrollerItem>
               )}
 
-              {chatTurns.map((turn) => (
+              {chatTurns.map((turn, index) => (
                 <MessageScrollerItem key={turn.id} messageId={`turn-${turn.id}`}>
                   <ChatTurn
                     turn={turn}
                     onRatingChange={(rating) => handleRatingChange(turn.id, rating)}
-                    onRetry={handleRetry}
+                    // 마지막 턴이 아닌 질문을 재시도하면 서버가 인식하는 대화 순서가 어긋나므로,
+                    // 재시도는 마지막 턴에서만 허용한다.
+                    onRetry={
+                      index === chatTurns.length - 1
+                        ? () => handleRetry(turn.id, turn.question)
+                        : undefined
+                    }
                   />
                 </MessageScrollerItem>
               ))}
