@@ -51,9 +51,7 @@ function FloatingChatContent() {
       const response = await postChat({ question, conversationId }, controller.signal);
 
       // 서버가 식별자를 내려주지 않은 경우에는 진행 중인 대화 식별자를 유지한다.
-      if (response.status !== 'ERROR') {
-        setConversationId((currentId) => response.conversationId ?? currentId);
-      }
+      setConversationId((currentId) => response.conversationId ?? currentId);
       setChatTurns((currentTurns) =>
         currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response } : turn)),
       );
