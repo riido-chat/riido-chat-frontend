@@ -44,7 +44,7 @@ function AssistantBubble({
 
   switch (response.status) {
     case 'ERROR':
-      return <ChatErrorNotice />;
+      return <ChatErrorNotice isRetryable={response.error.retryable} />;
 
     case 'ABORTED':
       return (
