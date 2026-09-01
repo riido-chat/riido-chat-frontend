@@ -10,9 +10,10 @@ import ReactMarkdown from 'react-markdown';
 type ChatTurnProps = {
   turn: ChatTurnData;
   onRatingChange: (rating: FeedbackRating | null) => void;
+  onRetry: (turnId: string, question: string) => void;
 };
 
-export default function ChatTurn({ turn, onRatingChange }: ChatTurnProps) {
+export default function ChatTurn({ turn, onRatingChange, onRetry }: ChatTurnProps) {
   return (
     <MessageGroup>
       <ChatBubble role="user">{turn.question}</ChatBubble>
@@ -20,6 +21,7 @@ export default function ChatTurn({ turn, onRatingChange }: ChatTurnProps) {
         response={turn.response}
         rating={turn.rating}
         onRatingChange={onRatingChange}
+        onRetry={() => onRetry(turn.id, turn.question)}
       />
     </MessageGroup>
   );
@@ -29,10 +31,12 @@ function AssistantBubble({
   response,
   rating,
   onRatingChange,
+  onRetry,
 }: {
   response: ChatTurnResponse | null;
   rating: FeedbackRating | null;
   onRatingChange: (rating: FeedbackRating | null) => void;
+  onRetry: () => void;
 }) {
   if (response === null) {
     return (
@@ -44,7 +48,7 @@ function AssistantBubble({
 
   switch (response.status) {
     case 'ERROR':
-      return <ChatErrorNotice isRetryable={response.error.retryable} />;
+      return <ChatErrorNotice isRetryable={response.error.retryable} onRetry={onRetry} />;
 
     case 'ABORTED':
       return (

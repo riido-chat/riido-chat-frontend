@@ -42,17 +42,9 @@ function FloatingChatContent() {
     scrollToEnd({ behavior: 'smooth' });
   }, [chatTurns.length, scrollToEnd]);
 
-  const handleSubmit = async (question: string) => {
-    if (isSubmitting) return;
-
-    const turnId = crypto.randomUUID();
+  const requestChat = async (turnId: string, question: string) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
-    setChatTurns((currentTurns) => [
-      ...currentTurns,
-      { id: turnId, question, response: null, rating: null },
-    ]);
     setIsSubmitting(true);
 
     try {
@@ -82,7 +74,32 @@ function FloatingChatContent() {
       );
     } finally {
       setIsSubmitting(false);
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
     }
+  };
+
+  const handleSubmit = async (question: string) => {
+    if (isSubmitting) return;
+
+    const turnId = crypto.randomUUID();
+    setChatTurns((currentTurns) => [
+      ...currentTurns,
+      { id: turnId, question, response: null, rating: null },
+    ]);
+
+    await requestChat(turnId, question);
+  };
+
+  const handleRetry = async (turnId: string, question: string) => {
+    if (isSubmitting) return;
+
+    setChatTurns((currentTurns) =>
+      currentTurns.map((turn) => (turn.id === turnId ? { ...turn, response: null } : turn)),
+    );
+
+    await requestChat(turnId, question);
   };
 
   const handleStopResponse = () => {
@@ -144,6 +161,7 @@ function FloatingChatContent() {
                   <ChatTurn
                     turn={turn}
                     onRatingChange={(rating) => handleRatingChange(turn.id, rating)}
+                    onRetry={handleRetry}
                   />
                 </MessageScrollerItem>
               ))}

@@ -6,9 +6,10 @@ import type { ErrorChatResponse } from '@/types/chat.types';
 
 type ChatErrorNoticeProps = {
   isRetryable: ErrorChatResponse['error']['retryable'];
+  onRetry: () => void;
 };
 
-export default function ChatErrorNotice({ isRetryable }: ChatErrorNoticeProps) {
+export default function ChatErrorNotice({ isRetryable, onRetry }: ChatErrorNoticeProps) {
   return (
     <div className="flex w-full flex-col items-center gap-2">
       <section className="flex w-full items-center gap-2">
@@ -25,7 +26,7 @@ export default function ChatErrorNotice({ isRetryable }: ChatErrorNoticeProps) {
       </section>
 
       {isRetryable && (
-        <Button variant="ghost" size="withIcon">
+        <Button variant="ghost" size="withIcon" onClick={onRetry}>
           <IoMdRefresh data-icon="inline-start" className="size-icon-sm" /> 다시 시도하기
         </Button>
       )}
