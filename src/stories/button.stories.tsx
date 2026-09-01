@@ -3,6 +3,7 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { FaStop } from 'react-icons/fa6';
 import { Button } from '@/components/common/button';
 import { IoSend } from 'react-icons/io5';
+import { IoMdRefresh } from 'react-icons/io';
 
 const meta = {
   title: 'Common/Button',
@@ -29,6 +30,9 @@ export const TextButton: Story = {
       </Button>
       <Button variant="ghost" size="default" onClick={() => console.log('Ghost button clicked')}>
         추천 질문 더보기
+      </Button>
+      <Button variant="ghost" size="withIcon" onClick={() => console.log('Retry button clicked')}>
+        <IoMdRefresh data-icon="inline-start" className="size-icon-sm" /> 다시 시도하기
       </Button>
       <Button variant="link" size="default" onClick={() => console.log('Link button clicked')}>
         1:1 상담
