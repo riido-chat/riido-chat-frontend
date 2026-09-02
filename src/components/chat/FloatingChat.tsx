@@ -32,6 +32,7 @@ function FloatingChatContent() {
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { scrollToEnd } = useMessageScroller();
 
   const view: ChatView =
@@ -125,10 +126,14 @@ function FloatingChatContent() {
   };
 
   return (
-    <Card className="h-200 max-h-[calc(100dvh-6rem)] w-md max-w-[calc(100vw-3rem)]">
+    <Card
+      ref={chatContainerRef}
+      className="h-200 max-h-[calc(100dvh-6rem)] w-md max-w-[calc(100vw-3rem)]"
+    >
       <NavBar
         onGoHome={view === 'home-expanded' ? handleGoHome : undefined}
         onEndChat={view === 'chat' ? handleEndChat : undefined}
+        dialogContainer={chatContainerRef}
       >
         뤼이도 RAG 챗봇
       </NavBar>
