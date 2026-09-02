@@ -6,6 +6,7 @@ import { MessageGroup } from '@/components/common/message';
 import { Separator } from '@/components/common/separator';
 import type { ChatTurnData, ChatTurnResponse, FeedbackRating } from '@/types/chat.types';
 import ReactMarkdown from 'react-markdown';
+import loadingImage from '@/assets/icons/loading.apng';
 
 type ChatTurnProps = {
   turn: ChatTurnData;
@@ -41,7 +42,12 @@ function AssistantBubble({
   if (response === null) {
     return (
       <ChatBubble role="assistant">
-        <p className="text-rc-iris-500 animate-pulse">...</p>
+        <div className="flex items-center gap-2">
+          <img src={loadingImage} alt="loading..." className="size-icon-lg" />
+          <p className="text-label-assistive text-body-2 animate-pulse font-bold">
+            답변 생성 중...
+          </p>
+        </div>
       </ChatBubble>
     );
   }
