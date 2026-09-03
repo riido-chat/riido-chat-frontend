@@ -83,7 +83,28 @@ function AssistantBubble({
           rating={rating}
           onRatingChange={onRatingChange}
         >
-          <ReactMarkdown>{response.answer.answerMarkdown}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              code({ className, children }) {
+                return (
+                  <code
+                    className={`bg-rc-gray-200/70 rounded px-1 py-0.5 font-mono text-[0.85em] ${className ?? ''}`}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+              pre({ children }) {
+                return (
+                  <pre className="bg-rc-gray-900 text-rc-gray-0 my-3 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
+                    {children}
+                  </pre>
+                );
+              },
+            }}
+          >
+            {response.answer.answerMarkdown}
+          </ReactMarkdown>
           <Separator className="mt-2 mb-3 h-[1.2px]" />
           <SourceBadgeList citations={response.citations} />
         </ChatBubble>
