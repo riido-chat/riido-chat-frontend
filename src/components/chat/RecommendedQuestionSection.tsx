@@ -16,7 +16,7 @@ export default function RecommendedQuestionSection({
   onExpand,
 }: RecommendedQuestionSectionProps) {
   return (
-    <div className="mb-4 flex flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <section className={cn('flex flex-col gap-2', !isExpanded && 'text-center')}>
         <span className="text-title-2 text-label-normal font-bold whitespace-pre-line">
           {isExpanded

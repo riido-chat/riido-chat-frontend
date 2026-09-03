@@ -70,7 +70,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('min-h-0 flex-1 overflow-y-auto px-12 pt-10', className)}
+      className={cn('min-h-0 flex-1 overflow-y-auto px-12 pt-10 pb-4', className)}
       {...props}
     />
   );
