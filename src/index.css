@@ -83,6 +83,12 @@
   --color-rc-iris-900: #372c7d;
   --color-rc-iris-950: #261e4f;
 
+  /* Riido Rose */
+  --color-rc-rose-50: #fdf0f0;
+  --color-rc-rose-100: #fde0e0;
+  --color-rc-rose-500: #f16464;
+  --color-rc-rose-600: #c93d3d;
+
   /*? Sementic */
   /* Label Color */
   --color-label-strong: var(--color-rc-gray-950);
