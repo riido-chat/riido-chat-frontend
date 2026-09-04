@@ -10,6 +10,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         link: 'cursor-pointer bg-rc-gray-200 text-caption text-label-alternative hover:bg-rc-gray-300 active:font-bold active:text-label-normal [&_svg]:text-icon-gray-enabled [&_svg]:text-label-assistive hover:[&_svg]:text-label-alternative active:[&_svg]:text-label-normal',
+        plain: 'border-rc-gray-200 bg-rc-gray-0 px-2.5 py-1 text-caption text-label-alternative',
+        attention: 'border-rc-iris-500 bg-rc-gray-0 px-2.5 py-1 text-caption text-rc-iris-700',
       },
     },
     defaultVariants: {
