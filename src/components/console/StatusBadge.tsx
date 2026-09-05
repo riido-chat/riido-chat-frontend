@@ -3,25 +3,23 @@ import { DOCUMENT_PROCESS_STATUS_LABEL, SEARCH_INDEX_STATUS_LABEL } from '@/lib/
 import type { DocumentProcessStatus, SearchIndexStatus } from '@/types/console.types';
 
 /**
- * 뱃지 톤은 정상에 색을 쓰지 않는다는 원칙을 따른다.
- * 진행(Progress)과 실패(Danger) 톤은 아직 디자인이 확정되지 않아 정상 톤으로 표시한다.
+ * 뱃지 톤은 정상에 색을 쓰지 않고, 면을 채우거나 dot 을 붙이지 않는다는 설계 원칙을 따른다.
+ * 디자인이 함께 정의한 Warning 톤은 예비용이라 아직 대응하는 상태가 없다.
  */
-type BadgeTone = 'plain' | 'attention';
+type BadgeTone = 'plain' | 'progress' | 'attention' | 'danger';
 
 const SEARCH_INDEX_STATUS_TONE: Record<SearchIndexStatus, BadgeTone> = {
   UP_TO_DATE: 'plain',
   REINDEX_REQUIRED: 'attention',
-  BUILDING: 'plain',
-  VALIDATING: 'plain',
-  APPLYING: 'plain',
-  FAILED: 'plain',
-  EMPTY: 'plain',
+  IN_PROGRESS: 'progress',
+  // 문서가 없는 상태는 실패가 아니라 아직 아무것도 담기지 않은 상태이므로 정상 톤으로 둔다.
+  NO_DOCUMENTS: 'plain',
 };
 
 const DOCUMENT_PROCESS_STATUS_TONE: Record<DocumentProcessStatus, BadgeTone> = {
-  READY: 'plain',
-  PROCESSING: 'plain',
-  FAILED: 'plain',
+  SUCCESS: 'plain',
+  PROCESSING: 'progress',
+  FAILED: 'danger',
 };
 
 /** 문서 그룹의 검색 반영 상태 뱃지. 원시 enum은 hover 툴팁으로만 병기한다. */
