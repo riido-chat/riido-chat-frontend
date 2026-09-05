@@ -89,6 +89,10 @@
   --color-rc-rose-500: #f16464;
   --color-rc-rose-600: #c93d3d;
 
+  /* Riido Amber */
+  --color-rc-amber-500: #f9a825;
+  --color-rc-amber-600: #b45309;
+
   /*? Sementic */
   /* Label Color */
   --color-label-strong: var(--color-rc-gray-950);
@@ -143,6 +147,9 @@
   --shadow-rc-shadow: 0 -2px 20px 0 color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
   --shadow-rc-shadow-center: 0 0 20px 0
     color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
+
+  /* 모달은 dim 위에 떠서 카드보다 짙은 그림자를 쓴다. */
+  --shadow-rc-shadow-modal: 0 10px 28px 0 rgb(0 0 0 / 0.14);
 
   /* Shadcn 호환 토큰 */
   --color-background: var(--color-background-default);
