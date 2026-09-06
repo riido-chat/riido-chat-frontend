@@ -27,8 +27,8 @@ export default function ConsoleGnb() {
                 cn(
                   'text-label flex h-10 items-center rounded-lg px-3 transition-colors',
                   isActive
-                    ? 'bg-background-tertiary text-label-normal font-medium'
-                    : 'text-label-alternative hover:bg-rc-gray-50 hover:text-label-normal',
+                    ? 'bg-rc-gray-200 text-label-normal font-medium'
+                    : 'text-label-alternative hover:bg-rc-gray-100 hover:text-label-normal',
                 )
               }
             >
