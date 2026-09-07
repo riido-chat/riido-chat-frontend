@@ -1,4 +1,5 @@
 import { Button } from '@/components/common/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/tooltip';
 import {
   ConsoleTable,
   ConsoleTableBody,
@@ -58,15 +59,33 @@ export default function DocumentTable({
               <AppliedStatusBadge status={doc.appliedStatus} />
             </ConsoleTableCell>
             <ConsoleTableCell className="text-right">
-              {/* 비활성 사유는 화면에 나타내지 않기로 했으므로 툴팁을 붙이지 않는다. */}
-              <Button
-                variant="console-secondary"
-                size="md"
-                disabled={!canUploadRevision(doc, isJobRunning)}
-                onClick={() => onUploadRevision?.(doc.documentId)}
-              >
-                수정본 업로드
-              </Button>
+              {doc.sourceType === 'GITBOOK' ? (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <span
+                        className="inline-flex"
+                        tabIndex={0}
+                        aria-label="GitBook으로 업로드된 문서는 수정할 수 없습니다."
+                      >
+                        <Button variant="console-secondary" size="md" disabled>
+                          수정본 업로드
+                        </Button>
+                      </span>
+                    }
+                  />
+                  <TooltipContent>GitBook 문서는 수정할 수 없습니다.</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="console-secondary"
+                  size="md"
+                  disabled={!canUploadRevision(doc, isJobRunning)}
+                  onClick={() => onUploadRevision?.(doc.documentId)}
+                >
+                  수정본 업로드
+                </Button>
+              )}
             </ConsoleTableCell>
           </tr>
         ))}
