@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/common/dialog';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/tooltip';
 import { GoHome } from 'react-icons/go';
 import { IoExitOutline as EndChatIcon } from 'react-icons/io5';
 
@@ -25,32 +26,37 @@ export default function NavBar({ children, onGoHome, onEndChat, dialogContainer 
     <Dialog>
       <CardHeader>
         {onGoHome ? (
-          <Button
-            onClick={onGoHome}
-            aria-label="홈으로 돌아가기"
-            title="홈으로 돌아가기"
-            size="icon-md"
-            variant="icon"
-          >
-            <GoHome className="size-icon-md" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button onClick={onGoHome} aria-label="홈으로 이동" size="icon-md" variant="icon">
+                  <GoHome className="size-icon-md" />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>홈으로</p>
+            </TooltipContent>
+          </Tooltip>
         ) : (
           <div className="size-10" />
         )}
         <CardTitle>{children}</CardTitle>
         {onEndChat ? (
-          <DialogTrigger
-            render={
-              <Button
-                aria-label="새 대화 시작하기"
-                title="새 대화 시작하기"
-                size="icon-md"
-                variant="icon"
-              >
-                <EndChatIcon className="size-icon-md" />
-              </Button>
-            }
-          />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <DialogTrigger
+                  render={
+                    <Button aria-label="대화 종료" size="icon-md" variant="icon">
+                      <EndChatIcon className="size-icon-md" />
+                    </Button>
+                  }
+                />
+              }
+            />
+            <TooltipContent>대화 종료</TooltipContent>
+          </Tooltip>
         ) : (
           <div className="size-10" />
         )}
