@@ -5,14 +5,14 @@ import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
 import GroupSummaryCard from '@/components/console/GroupSummaryCard';
-import { canReindex, isSearchIndexInProgress } from '@/lib/console';
-import { findDocumentGroup } from '@/mocks/console';
+import { canReindex, formatGroupDescription, isJobRunning } from '@/lib/console';
+import { findDocumentGroupDetail } from '@/mocks/console';
 
 export default function DocumentGroupDetailPage() {
   const { groupId } = useParams();
-  const group = findDocumentGroup(groupId);
+  const detail = findDocumentGroupDetail(groupId);
 
-  if (!group) {
+  if (!detail) {
     return (
       <ConsolePage breadcrumb={[{ label: '문서 관리' }]}>
         <ConsolePageHeader
@@ -26,7 +26,9 @@ export default function DocumentGroupDetailPage() {
     );
   }
 
-  const isInProgress = isSearchIndexInProgress(group.searchIndexStatus);
+  const { group, summary, documents } = detail;
+  // 실행 중인 작업이 있으면 실행 버튼을 모두 비활성으로 두고, 비활성 사유는 화면에 나타내지 않는다.
+  const isRunning = isJobRunning(detail);
 
   return (
     <ConsolePage
@@ -34,20 +36,24 @@ export default function DocumentGroupDetailPage() {
     >
       <ConsolePageHeader
         title={group.name}
-        description={group.description}
+        description={formatGroupDescription(group.consumerKey)}
         actions={
           <div className="flex items-start gap-2">
-            <Button variant="console-secondary" size="md" disabled={isInProgress}>
+            {/* GitBook 수집은 검색 반영 상태와 무관하게 실행 중인 작업이 있을 때에만 비활성이 된다. */}
+            <Button variant="console-secondary" size="md" disabled={isRunning}>
+              GitBook 수집
+            </Button>
+            <Button variant="console-secondary" size="md" disabled={isRunning}>
               신규 문서 업로드
             </Button>
-            <Button variant="console-primary" size="md" disabled={!canReindex(group)}>
+            <Button variant="console-primary" size="md" disabled={!canReindex(detail)}>
               검색에 반영하기
             </Button>
           </div>
         }
       />
-      <GroupSummaryCard group={group} />
-      <DocumentTable documents={group.documents} isRowActionDisabled={isInProgress} />
+      <GroupSummaryCard summary={summary} />
+      <DocumentTable documents={documents} isJobRunning={isRunning} />
     </ConsolePage>
   );
 }
