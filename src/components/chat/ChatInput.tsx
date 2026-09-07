@@ -4,6 +4,7 @@ import { IoSend } from 'react-icons/io5';
 import { FaStop } from 'react-icons/fa6';
 
 import { useRef, type KeyboardEvent, type SubmitEvent } from 'react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/tooltip';
 
 type ChatInputProps = {
   onSubmit: (message: string) => void;
@@ -54,20 +55,27 @@ export default function ChatInput({ onSubmit, onStop, isSubmitting = false }: Ch
           onKeyDown={handleKeyDown}
           ref={inputRef}
         />
-        <Button
-          type={isSubmitting ? 'button' : 'submit'}
-          onClick={isSubmitting ? onStop : undefined}
-          className="text-icon-iris-enabled bg-button-tertiary-enabled hover:bg-button-tertiary-pressed active:text-button-primary-pressed self-end"
-          size="icon-md"
-          variant="icon"
-          aria-label={isSubmitting ? '답변 생성 중단' : '메시지 전송'}
-        >
-          {isSubmitting ? (
-            <FaStop className="size-icon-md" />
-          ) : (
-            <IoSend className="size-icon-md origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
-          )}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type={isSubmitting ? 'button' : 'submit'}
+                onClick={isSubmitting ? onStop : undefined}
+                className="text-icon-iris-enabled bg-button-tertiary-enabled hover:bg-button-tertiary-pressed active:text-button-primary-pressed self-end"
+                size="icon-md"
+                variant="icon"
+                aria-label={isSubmitting ? '답변 생성 중단' : '메시지 전송'}
+              >
+                {isSubmitting ? (
+                  <FaStop className="size-icon-md" />
+                ) : (
+                  <IoSend className="size-icon-md origin-center translate-x-0.5 -translate-y-0.5 rotate-330" />
+                )}
+              </Button>
+            }
+          />
+          <TooltipContent>{isSubmitting ? '답변 생성 중단' : '전송'}</TooltipContent>
+        </Tooltip>
       </form>
       <p className="text-caption text-label-assistive text-center font-normal">
         AI 답변으로 해결되지 않는 경우 1:1 상담을 이용해 주세요.
