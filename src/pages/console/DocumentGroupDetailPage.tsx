@@ -39,6 +39,10 @@ export default function DocumentGroupDetailPage() {
         description={formatGroupDescription(group.consumerKey)}
         actions={
           <div className="flex items-start gap-2">
+            {/* GitBook 수집은 검색 반영 상태와 무관하게 실행 중인 작업이 있을 때에만 비활성이 된다. */}
+            <Button variant="console-secondary" size="md" disabled={isRunning}>
+              GitBook 수집
+            </Button>
             <Button variant="console-secondary" size="md" disabled={isRunning}>
               신규 문서 업로드
             </Button>
