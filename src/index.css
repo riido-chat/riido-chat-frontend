@@ -148,6 +148,9 @@
   --shadow-rc-shadow-center: 0 0 20px 0
     color-mix(in srgb, var(--color-rc-slate-200) 50%, transparent);
 
+  /* 모달은 dim 위에 떠서 카드보다 짙은 그림자를 쓴다. */
+  --shadow-rc-shadow-modal: 0 10px 28px 0 rgb(0 0 0 / 0.14);
+
   /* Shadcn 호환 토큰 */
   --color-background: var(--color-background-default);
   --color-foreground: var(--color-label-normal);
