@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 
 import { toConsoleApiError } from '@/api/console';
 import { Button } from '@/components/common/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/tooltip';
 import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
@@ -49,6 +50,12 @@ export default function DocumentGroupDetailPage() {
   const { group, summary, documents } = detail;
   // 실행 중인 작업이 있으면 실행 버튼을 모두 비활성으로 두고, 비활성 사유는 화면에 나타내지 않는다.
   const isRunning = isJobRunning(detail);
+  const isReindexAvailable = canReindex(detail);
+  const reindexDisabledMessage = isRunning
+    ? '진행 중인 작업이 완료된 후 검색에 반영할 수 있습니다.'
+    : summary.searchStatus === 'NO_DOCUMENTS'
+      ? '검색에 반영할 문서가 없습니다.'
+      : '이미 최신 상태입니다.';
 
   const handleUploadRevision = (documentId: number) => {
     const targetDocument = documents.find((document) => document.documentId === documentId);
@@ -122,9 +129,22 @@ export default function DocumentGroupDetailPage() {
             >
               신규 문서 업로드
             </Button>
-            <Button variant="console-primary" size="md" disabled={!canReindex(detail)}>
-              검색에 반영하기
-            </Button>
+            {isReindexAvailable ? (
+              <Button variant="console-primary" size="md">
+                검색에 반영하기
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="console-primary" size="md" disabled focusableWhenDisabled>
+                      검색에 반영하기
+                    </Button>
+                  }
+                />
+                <TooltipContent>{reindexDisabledMessage}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         }
       />

@@ -26,13 +26,6 @@ const DIALOG_TITLE: Record<DocumentUploadMode, string> = {
   revision: '수정본 업로드',
 };
 
-/**
- * 문서명 필드는 높이 40을 고정하고, 비활성일 때는 흐리게 낮추는 대신
- * 읽기 전용 표시에 쓰는 회색 배경과 보조 라벨색으로 바꾼다.
- */
-const DOCUMENT_NAME_FIELD_CLASS =
-  'bg-background-default text-label md:text-label disabled:bg-background-tertiary disabled:border-rc-gray-200 disabled:text-label-assistive h-10 px-3 disabled:opacity-100';
-
 type DocumentUploadDialogProps = {
   /**
    * 열어 둘 업로드 대상. null 이면 모달이 닫힌다.
@@ -198,7 +191,6 @@ export default function DocumentUploadDialog({
           </label>
           <Input
             id={documentNameFieldId}
-            className={DOCUMENT_NAME_FIELD_CLASS}
             value={nameFieldValue}
             maxLength={DOCUMENT_TITLE_MAX_LENGTH}
             disabled={isNameFixed || isUploading}
