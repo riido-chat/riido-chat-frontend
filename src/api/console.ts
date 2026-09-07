@@ -16,6 +16,17 @@ const FALLBACK_ERROR: ConsoleErrorResponse = {
 };
 
 /**
+ * 파싱에 성공한 본문이 서버가 정한 오류 형태인지 확인한다.
+ * 게이트웨이가 자기 형식으로 내려준 JSON 은 파싱을 통과하면서도 code 와 message 를 갖고 있지 않은데,
+ * 타입 표기는 런타임에 남지 않으므로 두 값을 직접 확인해야 문구가 빈 오류 모달을 막을 수 있다.
+ */
+const toErrorResponse = (body: unknown): ConsoleErrorResponse | null => {
+  const { code, message } = (body ?? {}) as Partial<ConsoleErrorResponse>;
+
+  return typeof code === 'string' && typeof message === 'string' ? { code, message } : null;
+};
+
+/**
  * 업로드 엔드포인트가 내려준 오류를 그대로 담는 오류 객체.
  * 화면 문구는 message 를 그대로 쓰고, code 는 어느 화면에 보일지만 정한다.
  */
@@ -46,8 +57,8 @@ async function postUpload(path: string, body: FormData): Promise<DocumentUploadR
 
   if (!response.ok) {
     // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
-    // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하는 경우가 여기에 해당한다.
-    const errorBody: ConsoleErrorResponse | null = await response.json().catch(() => null);
+    // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하거나, 게이트웨이가 형태가 다른 JSON 을 내려주는 경우가 여기에 해당한다.
+    const errorBody = toErrorResponse(await response.json().catch(() => null));
     throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
   }
 
