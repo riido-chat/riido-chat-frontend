@@ -1,6 +1,6 @@
 import { Badge } from '@/components/common/badge';
-import { DOCUMENT_PROCESS_STATUS_LABEL, SEARCH_INDEX_STATUS_LABEL } from '@/lib/console';
-import type { DocumentProcessStatus, SearchIndexStatus } from '@/types/console.types';
+import { APPLIED_STATUS_LABEL, SEARCH_STATUS_LABEL } from '@/lib/console';
+import type { AppliedStatus, SearchStatus } from '@/types/console.types';
 
 /**
  * 뱃지 톤은 정상에 색을 쓰지 않는다는 원칙을 따른다.
@@ -8,36 +8,33 @@ import type { DocumentProcessStatus, SearchIndexStatus } from '@/types/console.t
  */
 type BadgeTone = 'plain' | 'attention';
 
-const SEARCH_INDEX_STATUS_TONE: Record<SearchIndexStatus, BadgeTone> = {
+const SEARCH_STATUS_TONE: Record<SearchStatus, BadgeTone> = {
   UP_TO_DATE: 'plain',
   REINDEX_REQUIRED: 'attention',
-  BUILDING: 'plain',
-  VALIDATING: 'plain',
-  APPLYING: 'plain',
+  IN_PROGRESS: 'plain',
+  NO_DOCUMENTS: 'plain',
   FAILED: 'plain',
-  EMPTY: 'plain',
 };
 
-const DOCUMENT_PROCESS_STATUS_TONE: Record<DocumentProcessStatus, BadgeTone> = {
-  READY: 'plain',
-  PROCESSING: 'plain',
-  FAILED: 'plain',
+const APPLIED_STATUS_TONE: Record<AppliedStatus, BadgeTone> = {
+  APPLIED: 'plain',
+  UNAPPLIED: 'attention',
 };
 
 /** 문서 그룹의 검색 반영 상태 뱃지. 원시 enum은 hover 툴팁으로만 병기한다. */
-export function SearchIndexStatusBadge({ status }: { status: SearchIndexStatus }) {
+export function SearchStatusBadge({ status }: { status: SearchStatus }) {
   return (
-    <Badge variant={SEARCH_INDEX_STATUS_TONE[status]} title={status}>
-      {SEARCH_INDEX_STATUS_LABEL[status]}
+    <Badge variant={SEARCH_STATUS_TONE[status]} title={status}>
+      {SEARCH_STATUS_LABEL[status]}
     </Badge>
   );
 }
 
-/** 문서 한 건의 처리 상태 뱃지 */
-export function DocumentProcessStatusBadge({ status }: { status: DocumentProcessStatus }) {
+/** 문서 한 건의 반영 여부 뱃지. 아직 반영되지 않은 문서만 주의 톤으로 구분해서 보여준다. */
+export function AppliedStatusBadge({ status }: { status: AppliedStatus }) {
   return (
-    <Badge variant={DOCUMENT_PROCESS_STATUS_TONE[status]} title={status}>
-      {DOCUMENT_PROCESS_STATUS_LABEL[status]}
+    <Badge variant={APPLIED_STATUS_TONE[status]} title={status}>
+      {APPLIED_STATUS_LABEL[status]}
     </Badge>
   );
 }
