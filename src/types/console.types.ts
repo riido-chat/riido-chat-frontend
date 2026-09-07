@@ -82,3 +82,79 @@ export type DocumentGroupDetail = {
 
 // 업로드 모달의 동작 구분. 신규 업로드와 수정본 업로드는 하나의 모달을 mode 로만 나눈다.
 export type DocumentUploadMode = 'new' | 'revision';
+
+/**
+ * 업로드 모달이 여는 대상. 신규 업로드는 그룹을, 수정본 업로드는 문서 원본을 경로로 잡는다.
+ * 두 엔드포인트가 경로와 필드를 다르게 받기 때문에 mode 로 갈라 두어야
+ * 문서명이 없는 수정본 대상이나 문서 원본이 없는 신규 대상이 만들어지지 않는다.
+ */
+export type DocumentUploadTarget =
+  | { mode: 'new'; groupId: number }
+  | { mode: 'revision'; documentId: number; documentTitle: string };
+
+/**
+ * 업로드 요청. multipart/form-data 로 보내는 필드와 경로를 정하는 값만 담는다.
+ * 수정본 업로드는 title 을 보내지 않으므로 요청 형태에도 문서명을 두지 않는다.
+ */
+export type DocumentUploadRequest =
+  | { mode: 'new'; groupId: number; file: File; title: string }
+  | { mode: 'revision'; documentId: number; file: File };
+
+// 새 판을 만들면서 청크가 어떻게 바뀌었는지 나타내는 집계
+export type ChunkStats = {
+  added: number;
+  changed: number;
+  deleted: number;
+  reused: number;
+};
+
+/**
+ * 업로드 성공 응답. 신규 업로드와 수정본 업로드가 같은 형태를 돌려주고 null 이 되는 필드가 없다.
+ * versionNo 는 신규 업로드에서 항상 1 이고, 수정본 업로드에서 2 이상이다.
+ */
+export type DocumentUploadResult = {
+  // 로그와 지원 문의 추적에만 쓰는 값이므로 화면에 표시하지 않는다.
+  ingestionRunId: number;
+  documentId: number;
+  documentVersionId: number;
+  versionNo: number;
+  sectionCount: number;
+  chunkCount: number;
+  chunkStats: ChunkStats;
+};
+
+/**
+ * 업로드 두 엔드포인트가 내려주는 오류 코드.
+ * DOCUMENT_ALREADY_EXISTS 는 신규 업로드에만, NO_CHANGE 와 DOCUMENT_NOT_REVISABLE 은 수정본 업로드에만 나온다.
+ */
+export type UploadErrorCode =
+  // 오류 모달에 message 를 그대로 띄우는 코드
+  | 'DOCUMENT_ALREADY_EXISTS'
+  | 'DUPLICATE_CONTENT'
+  | 'NO_CHANGE'
+  | 'FILE_TOO_LARGE'
+  | 'INVALID_FILE'
+  | 'INTERNAL_ERROR'
+  // 정상 흐름에서는 버튼이 비활성이라 도달하지 않는 방어용 코드
+  | 'NOT_FOUND'
+  | 'DOCUMENT_NOT_REVISABLE'
+  | 'JOB_IN_PROGRESS'
+  | 'INVALID_REQUEST';
+
+/**
+ * 접수 전 거절과 접수 뒤 실패가 함께 쓰는 오류 응답.
+ * 화면에 보이는 문장은 message 그대로이고, code 는 어느 화면에 보일지만 정한다.
+ */
+export type ConsoleErrorResponse = {
+  code: UploadErrorCode;
+  message: string;
+};
+
+/**
+ * 업로드가 끝난 결과. 성공은 신규와 수정본이 공유하는 한 종류이고, 실패도 오류 모달 한 종류다.
+ * 모든 실행이 동기라서 진행 상태나 단계가 없고, 결과가 정해진 뒤에만 이 값이 만들어진다.
+ */
+export type UploadOutcome =
+  | { status: 'ready'; result: DocumentUploadResult }
+  // 화면에 보이는 문장은 응답의 message 그대로다.
+  | { status: 'failed'; message: string };
