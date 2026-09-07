@@ -6,11 +6,11 @@ import {
   ConsoleTableCell,
   ConsoleTableHead,
 } from '@/components/console/ConsoleTable';
-import { SearchIndexStatusBadge } from '@/components/console/StatusBadge';
-import { formatSearchIndexVersion } from '@/lib/console';
+import { SearchStatusBadge } from '@/components/console/StatusBadge';
+import { formatActiveIndexVersion } from '@/lib/console';
 import type { DocumentGroupSummary } from '@/types/console.types';
 
-const getDetailPath = (groupId: string) => `/console/document-groups/${groupId}`;
+const getDetailPath = (groupId: number) => `/console/document-groups/${groupId}`;
 
 /** 문서 그룹 목록 표. 행은 항상 클릭할 수 있고 문서 그룹 상세로 이동한다. */
 export default function DocumentGroupTable({ groups }: { groups: DocumentGroupSummary[] }) {
@@ -37,13 +37,13 @@ export default function DocumentGroupTable({ groups }: { groups: DocumentGroupSu
       <ConsoleTableBody>
         {groups.map((group) => (
           <tr
-            key={group.id}
-            onClick={() => navigate(getDetailPath(group.id))}
+            key={group.groupId}
+            onClick={() => navigate(getDetailPath(group.groupId))}
             className="hover:bg-rc-gray-50 cursor-pointer transition-colors"
           >
             <ConsoleTableCell className="truncate">
               <Link
-                to={getDetailPath(group.id)}
+                to={getDetailPath(group.groupId)}
                 title={group.name}
                 onClick={(event) => event.stopPropagation()}
                 className="focus-visible:ring-button-primary-enabled rounded-sm outline-none focus-visible:ring-2"
@@ -52,14 +52,14 @@ export default function DocumentGroupTable({ groups }: { groups: DocumentGroupSu
               </Link>
             </ConsoleTableCell>
             <ConsoleTableCell className="text-label-assistive truncate">
-              {group.feature}
+              {group.consumerKey}
             </ConsoleTableCell>
             <ConsoleTableCell>{group.documentCount}</ConsoleTableCell>
             <ConsoleTableCell>
-              <SearchIndexStatusBadge status={group.searchIndexStatus} />
+              <SearchStatusBadge status={group.searchStatus} />
             </ConsoleTableCell>
             <ConsoleTableCell className="truncate">
-              {formatSearchIndexVersion(group.searchIndexVersion)}
+              {formatActiveIndexVersion(group.activeIndexVersionNo)}
             </ConsoleTableCell>
           </tr>
         ))}

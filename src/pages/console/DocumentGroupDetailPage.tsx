@@ -7,13 +7,13 @@ import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
 import GroupSummaryCard from '@/components/console/GroupSummaryCard';
-import { canReindex, isSearchIndexInProgress } from '@/lib/console';
-import { findDocumentGroup } from '@/mocks/console';
+import { canReindex, formatGroupDescription, isJobRunning } from '@/lib/console';
+import { findDocumentGroupDetail } from '@/mocks/console';
 import type { DocumentUploadMode } from '@/types/console.types';
 
 type UploadTarget = {
   mode: DocumentUploadMode;
-  documentName?: string;
+  documentTitle?: string;
 };
 
 const UPLOAD_MOCK_DELAY_MS = 1500;
@@ -31,9 +31,9 @@ const requestDocumentUpload = () =>
 export default function DocumentGroupDetailPage() {
   const { groupId } = useParams();
   const [uploadTarget, setUploadTarget] = useState<UploadTarget | null>(null);
-  const group = findDocumentGroup(groupId);
+  const detail = findDocumentGroupDetail(groupId);
 
-  if (!group) {
+  if (!detail) {
     return (
       <ConsolePage breadcrumb={[{ label: '문서 관리' }]}>
         <ConsolePageHeader
@@ -47,13 +47,15 @@ export default function DocumentGroupDetailPage() {
     );
   }
 
-  const isInProgress = isSearchIndexInProgress(group.searchIndexStatus);
+  const { group, summary, documents } = detail;
+  // 실행 중인 작업이 있으면 실행 버튼을 모두 비활성으로 두고, 비활성 사유는 화면에 나타내지 않는다.
+  const isRunning = isJobRunning(detail);
 
-  const handleUploadRevision = (documentId: string) => {
-    const targetDocument = group.documents.find((document) => document.id === documentId);
+  const handleUploadRevision = (documentId: number) => {
+    const targetDocument = documents.find((document) => document.documentId === documentId);
 
     if (targetDocument) {
-      setUploadTarget({ mode: 'revision', documentName: targetDocument.name });
+      setUploadTarget({ mode: 'revision', documentTitle: targetDocument.title });
     }
   };
 
@@ -63,27 +65,31 @@ export default function DocumentGroupDetailPage() {
     >
       <ConsolePageHeader
         title={group.name}
-        description={group.description}
+        description={formatGroupDescription(group.consumerKey)}
         actions={
           <div className="flex items-start gap-2">
+            {/* GitBook 수집은 검색 반영 상태와 무관하게 실행 중인 작업이 있을 때에만 비활성이 된다. */}
+            <Button variant="console-secondary" size="md" disabled={isRunning}>
+              GitBook 수집
+            </Button>
             <Button
               variant="console-secondary"
               size="md"
-              disabled={isInProgress}
+              disabled={isRunning}
               onClick={() => setUploadTarget({ mode: 'new' })}
             >
               신규 문서 업로드
             </Button>
-            <Button variant="console-primary" size="md" disabled={!canReindex(group)}>
+            <Button variant="console-primary" size="md" disabled={!canReindex(detail)}>
               검색에 반영하기
             </Button>
           </div>
         }
       />
-      <GroupSummaryCard group={group} />
+      <GroupSummaryCard summary={summary} />
       <DocumentTable
-        documents={group.documents}
-        isRowActionDisabled={isInProgress}
+        documents={documents}
+        isJobRunning={isRunning}
         onUploadRevision={handleUploadRevision}
       />
       {/* 취소나 닫기로 모달만 닫히고 상세 화면은 그대로 유지한다. */}
@@ -95,7 +101,7 @@ export default function DocumentGroupDetailPage() {
             setUploadTarget(null);
           }
         }}
-        targetDocumentName={uploadTarget?.documentName}
+        targetDocumentName={uploadTarget?.documentTitle}
         onUpload={requestDocumentUpload}
       />
     </ConsolePage>

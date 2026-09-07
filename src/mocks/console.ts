@@ -1,78 +1,138 @@
-import type { DocumentGroupDetail } from '@/types/console.types';
+import type { DocumentGroupDetail, DocumentGroupSummary } from '@/types/console.types';
 
-export const documentGroups: DocumentGroupDetail[] = [
+export const documentGroupDetails: DocumentGroupDetail[] = [
   {
-    id: 'help-chatbot-guide',
-    name: '도움말 챗봇 이용가이드',
-    description: 'HELP_CHATBOT 기능이 사용하는 문서 그룹',
-    feature: 'HELP_CHATBOT',
-    documentCount: 4,
-    searchIndexStatus: 'REINDEX_REQUIRED',
-    searchIndexVersion: 12,
-    documents: [
+    group: {
+      groupId: 1,
+      groupKey: 'HELP_CHATBOT',
+      name: '도움말 챗봇 이용가이드',
+      consumerKey: 'HELP_CHATBOT',
+    },
+    sources: [
       {
-        id: 'doc-usage-guide',
-        name: '이용가이드',
-        documentVersion: 4,
-        indexedVersion: 3,
-        processStatus: 'SUCCESS',
-      },
-      {
-        id: 'doc-faq',
-        name: '자주 묻는 질문',
-        documentVersion: 2,
-        indexedVersion: 2,
-        processStatus: 'SUCCESS',
-      },
-      {
-        id: 'doc-service-policy',
-        name: '서비스 정책 안내',
-        documentVersion: 1,
-        indexedVersion: 1,
-        processStatus: 'SUCCESS',
-      },
-      {
-        id: 'doc-release-note-2026h1',
-        name: '2026년 상반기 기능 업데이트 및 릴리즈 노트 모음 (v1 개정판, 운영팀 검수 완료본)',
-        documentVersion: 4,
-        indexedVersion: 3,
-        processStatus: 'SUCCESS',
+        groupSourceId: 1,
+        provider: 'GITBOOK',
+        rootUrl: 'https://docs.riido.io',
+        enabled: true,
+        documentCount: 1,
       },
     ],
+    summary: {
+      activeIndexVersion: { indexVersionId: 57, versionNo: 12 },
+      pendingCount: 2,
+      searchStatus: 'REINDEX_REQUIRED',
+    },
+    documents: [
+      {
+        documentId: 101,
+        documentKey: 'upload/이용가이드',
+        title: '이용가이드',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 4,
+        appliedVersionNo: 3,
+        appliedStatus: 'UNAPPLIED',
+      },
+      {
+        documentId: 102,
+        documentKey: 'upload/자주-묻는-질문',
+        title: '자주 묻는 질문',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 2,
+        appliedVersionNo: 2,
+        appliedStatus: 'APPLIED',
+      },
+      {
+        documentId: 7,
+        documentKey: 'policies/service-policy',
+        title: '서비스 정책 안내',
+        sourceType: 'GITBOOK',
+        groupSourceId: 1,
+        documentVersionNo: 1,
+        appliedVersionNo: 1,
+        appliedStatus: 'APPLIED',
+      },
+      {
+        documentId: 104,
+        documentKey: 'upload/2026-상반기-릴리즈-노트',
+        title: '2026년 상반기 기능 업데이트 및 릴리즈 노트 모음 (v1 개정판, 운영팀 검수 완료본)',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 4,
+        appliedVersionNo: 3,
+        appliedStatus: 'UNAPPLIED',
+      },
+    ],
+    jobInProgress: false,
   },
   {
-    id: 'service-policy-guide',
-    name: '서비스 정책 안내',
-    description: 'POLICY_CHATBOT 기능이 사용하는 문서 그룹',
-    feature: 'POLICY_CHATBOT',
-    documentCount: 3,
-    searchIndexStatus: 'UP_TO_DATE',
-    searchIndexVersion: 8,
+    group: {
+      groupId: 2,
+      groupKey: 'POLICY_CHATBOT',
+      name: '서비스 정책 안내',
+      consumerKey: 'POLICY_CHATBOT',
+    },
+    sources: [],
+    summary: {
+      activeIndexVersion: { indexVersionId: 41, versionNo: 8 },
+      pendingCount: 0,
+      searchStatus: 'UP_TO_DATE',
+    },
     documents: [
       {
-        id: 'doc-terms',
-        name: '이용약관',
-        documentVersion: 3,
-        indexedVersion: 3,
-        processStatus: 'SUCCESS',
+        documentId: 201,
+        documentKey: 'upload/이용약관',
+        title: '이용약관',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 3,
+        appliedVersionNo: 3,
+        appliedStatus: 'APPLIED',
       },
       {
-        id: 'doc-privacy',
-        name: '개인정보 처리방침',
-        documentVersion: 2,
-        indexedVersion: 2,
-        processStatus: 'SUCCESS',
+        documentId: 202,
+        documentKey: 'upload/개인정보-처리방침',
+        title: '개인정보 처리방침',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 2,
+        appliedVersionNo: 2,
+        appliedStatus: 'APPLIED',
       },
       {
-        id: 'doc-refund',
-        name: '환불 및 취소 정책',
-        documentVersion: 1,
-        indexedVersion: 1,
-        processStatus: 'SUCCESS',
+        documentId: 203,
+        documentKey: 'upload/환불-및-취소-정책',
+        title: '환불 및 취소 정책',
+        sourceType: 'UPLOAD',
+        groupSourceId: null,
+        documentVersionNo: 1,
+        appliedVersionNo: 1,
+        appliedStatus: 'APPLIED',
       },
     ],
+    jobInProgress: false,
   },
 ];
 
-export const findDocumentGroup = (groupId: string | undefined) =>
-  documentGroups.find((group) => group.id === groupId) ?? null;
+/**
+ * 목록 조회는 별도의 API이지만, 목 데이터끼리 어긋나지 않도록 상세 목 데이터에서 만들어 낸다.
+ * 상세의 문서 표에는 목록의 문서 수와 같은 기준으로 걸러진 문서만 들어 있다.
+ */
+export const documentGroups: DocumentGroupSummary[] = documentGroupDetails.map((detail) => ({
+  ...detail.group,
+  documentCount: detail.documents.length,
+  activeIndexVersionNo: detail.summary.activeIndexVersion?.versionNo ?? null,
+  searchStatus: detail.summary.searchStatus,
+}));
+
+// 주소 표시줄에서 받은 값은 문자열이므로 숫자로 바꾸어 문서 그룹을 찾는다.
+export const findDocumentGroupDetail = (groupId: string | undefined) => {
+  const parsedGroupId = Number(groupId);
+
+  if (groupId === undefined || !Number.isInteger(parsedGroupId)) {
+    return null;
+  }
+
+  return documentGroupDetails.find((detail) => detail.group.groupId === parsedGroupId) ?? null;
+};
