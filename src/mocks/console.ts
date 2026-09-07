@@ -151,17 +151,14 @@ const MAX_UPLOAD_FILE_SIZE = 5 * 1024 * 1024;
 // 임베딩까지 마친 응답이 도착할 때까지 이어지는 전송 중 상태를 지연으로 재현한다.
 const MOCK_UPLOAD_DELAY_MS = 1500;
 
-// 목이 돌려주는 오류. 실제 응답과 같은 code 와 message 에 HTTP 상태만 덧붙인다.
-type MockRejection = ConsoleErrorResponse & { status: number };
-
 const delay = (durationMs: number) =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, durationMs);
   });
 
 // 반환 형식을 never 로 적어 두어야 호출한 자리에서 뒤 코드가 실행되지 않는다는 사실이 좁혀진다.
-function throwRejection({ status, ...body }: MockRejection): never {
-  throw new ConsoleApiError(body, status);
+function throwRejection(body: ConsoleErrorResponse): never {
+  throw new ConsoleApiError(body);
 }
 
 /**
@@ -182,10 +179,9 @@ const normalizeDocumentTitle = (title: string) =>
  * 파일 조건 검증. 어긋나면 접수 전 거절이다.
  * UTF-8 여부는 본문을 읽어야 판정할 수 있으므로 목에서는 다루지 않는다.
  */
-function findFileRejection(file: File): MockRejection | null {
+function findFileRejection(file: File): ConsoleErrorResponse | null {
   if (!isMarkdownFileName(file.name)) {
     return {
-      status: 422,
       code: 'INVALID_FILE',
       message: '.md 확장자의 Markdown 파일만 업로드할 수 있습니다.',
     };
@@ -193,14 +189,13 @@ function findFileRejection(file: File): MockRejection | null {
 
   if (file.size === 0) {
     return {
-      status: 422,
       code: 'INVALID_FILE',
       message: '빈 Markdown 파일은 업로드할 수 없습니다.',
     };
   }
 
   if (file.size > MAX_UPLOAD_FILE_SIZE) {
-    return { status: 413, code: 'FILE_TOO_LARGE', message: '파일 용량이 5MB 를 넘습니다.' };
+    return { code: 'FILE_TOO_LARGE', message: '파일 용량이 5MB 를 넘습니다.' };
   }
 
   return null;
@@ -235,7 +230,7 @@ async function uploadNewDocumentMock(
   const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
 
   if (detail === undefined) {
-    throwRejection({ status: 404, code: 'NOT_FOUND', message: '존재하지 않는 문서 그룹입니다.' });
+    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서 그룹입니다.' });
   }
 
   const fileRejection = findFileRejection(file);
@@ -248,7 +243,6 @@ async function uploadNewDocumentMock(
 
   if (normalizedTitle === '') {
     throwRejection({
-      status: 422,
       code: 'INVALID_FILE',
       message: '문서명에 사용할 수 있는 문자가 없습니다.',
     });
@@ -262,7 +256,6 @@ async function uploadNewDocumentMock(
 
   if (isTitleTaken) {
     throwRejection({
-      status: 409,
       code: 'DOCUMENT_ALREADY_EXISTS',
       message:
         '같은 이름의 문서가 이미 있습니다. 수정본 업로드를 사용하거나 다른 이름을 입력해 주세요.',
@@ -288,12 +281,11 @@ async function uploadDocumentRevisionMock(
     .find((document) => document.documentId === documentId);
 
   if (target === undefined) {
-    throwRejection({ status: 404, code: 'NOT_FOUND', message: '존재하지 않는 문서입니다.' });
+    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서입니다.' });
   }
 
   if (target.sourceType === 'GITBOOK') {
     throwRejection({
-      status: 409,
       code: 'DOCUMENT_NOT_REVISABLE',
       message: 'GitBook 문서에는 수정본을 올릴 수 없습니다.',
     });

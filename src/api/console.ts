@@ -21,29 +21,12 @@ const FALLBACK_ERROR: ConsoleErrorResponse = {
  */
 export class ConsoleApiError extends Error {
   readonly code: ConsoleErrorResponse['code'];
-  readonly status: number;
 
-  constructor({ code, message }: ConsoleErrorResponse, status: number) {
+  constructor({ code, message }: ConsoleErrorResponse) {
     super(message);
     this.name = 'ConsoleApiError';
     this.code = code;
-    this.status = status;
   }
-}
-
-/** 오류 본문은 code 와 message 두 필드다. 형태가 어긋나면 INTERNAL_ERROR 와 같은 값으로 메운다. */
-function toErrorResponse(body: unknown): ConsoleErrorResponse {
-  if (typeof body !== 'object' || body === null) {
-    return FALLBACK_ERROR;
-  }
-
-  const { code, message } = body as Partial<ConsoleErrorResponse>;
-
-  return {
-    code: code ?? FALLBACK_ERROR.code,
-    // 빈 문장을 그대로 보이면 오류 모달의 본문이 비기 때문에 기본 문장으로 바꾼다.
-    message: message !== undefined && message.trim() !== '' ? message : FALLBACK_ERROR.message,
-  };
 }
 
 /**
@@ -51,7 +34,7 @@ function toErrorResponse(body: unknown): ConsoleErrorResponse {
  * 호출하는 쪽이 오류 종류를 가리지 않고 code 하나로 화면을 나눌 수 있게 해 준다.
  */
 export const toConsoleApiError = (error: unknown) =>
-  error instanceof ConsoleApiError ? error : new ConsoleApiError(FALLBACK_ERROR, 500);
+  error instanceof ConsoleApiError ? error : new ConsoleApiError(FALLBACK_ERROR);
 
 /**
  * 업로드 두 엔드포인트가 요청 형태와 응답 형태를 공유하므로 전송과 오류 변환을 한곳에 모은다.
@@ -62,8 +45,10 @@ async function postUpload(path: string, body: FormData): Promise<DocumentUploadR
   const response = await fetch(`${API_BASE_URL}${path}`, { method: 'POST', body });
 
   if (!response.ok) {
-    const errorBody: unknown = await response.json().catch(() => null);
-    throw new ConsoleApiError(toErrorResponse(errorBody), response.status);
+    // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
+    // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하는 경우가 여기에 해당한다.
+    const errorBody: ConsoleErrorResponse | null = await response.json().catch(() => null);
+    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
   }
 
   return response.json();
