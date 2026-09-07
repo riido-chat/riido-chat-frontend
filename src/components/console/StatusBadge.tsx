@@ -2,18 +2,16 @@ import { Badge } from '@/components/common/badge';
 import { APPLIED_STATUS_LABEL, SEARCH_STATUS_LABEL } from '@/lib/console';
 import type { AppliedStatus, SearchStatus } from '@/types/console.types';
 
-/**
- * 뱃지 톤은 정상에 색을 쓰지 않는다는 원칙을 따른다.
- * 진행(Progress)과 실패(Danger) 톤은 아직 디자인이 확정되지 않아 정상 톤으로 표시한다.
- */
-type BadgeTone = 'plain' | 'attention';
+// 운영콘솔 상태 뱃지가 쓰는 톤. warning 은 아직 문서 관리 화면에 쓰이는 상태가 없다.
+type BadgeTone = 'plain' | 'progress' | 'attention' | 'warning' | 'danger';
 
+// 문서가 없는 상태는 조치할 일이 없어서 정상 톤을 유지한다.
 const SEARCH_STATUS_TONE: Record<SearchStatus, BadgeTone> = {
   UP_TO_DATE: 'plain',
   REINDEX_REQUIRED: 'attention',
-  IN_PROGRESS: 'plain',
+  IN_PROGRESS: 'progress',
   NO_DOCUMENTS: 'plain',
-  FAILED: 'plain',
+  FAILED: 'danger',
 };
 
 const APPLIED_STATUS_TONE: Record<AppliedStatus, BadgeTone> = {

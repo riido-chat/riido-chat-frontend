@@ -89,6 +89,10 @@
   --color-rc-rose-500: #f16464;
   --color-rc-rose-600: #c93d3d;
 
+  /* Riido Amber */
+  --color-rc-amber-500: #f9a825;
+  --color-rc-amber-600: #b45309;
+
   /*? Sementic */
   /* Label Color */
   --color-label-strong: var(--color-rc-gray-950);
