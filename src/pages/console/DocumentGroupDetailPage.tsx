@@ -137,11 +137,9 @@ export default function DocumentGroupDetailPage() {
               <Tooltip>
                 <TooltipTrigger
                   render={
-                    <span className="inline-flex" tabIndex={0} aria-label={reindexDisabledMessage}>
-                      <Button variant="console-primary" size="md" disabled>
-                        검색에 반영하기
-                      </Button>
-                    </span>
+                    <Button variant="console-primary" size="md" disabled focusableWhenDisabled>
+                      검색에 반영하기
+                    </Button>
                   }
                 />
                 <TooltipContent>{reindexDisabledMessage}</TooltipContent>

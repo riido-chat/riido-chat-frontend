@@ -63,15 +63,9 @@ export default function DocumentTable({
                 <Tooltip>
                   <TooltipTrigger
                     render={
-                      <span
-                        className="inline-flex"
-                        tabIndex={0}
-                        aria-label="GitBook으로 업로드된 문서는 수정할 수 없습니다."
-                      >
-                        <Button variant="console-secondary" size="md" disabled>
-                          수정본 업로드
-                        </Button>
-                      </span>
+                      <Button variant="console-secondary" size="md" disabled focusableWhenDisabled>
+                        수정본 업로드
+                      </Button>
                     }
                   />
                   <TooltipContent>GitBook 문서는 수정할 수 없습니다.</TooltipContent>
