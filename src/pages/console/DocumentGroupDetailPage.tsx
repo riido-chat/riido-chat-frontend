@@ -1,39 +1,38 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
+import { toConsoleApiError } from '@/api/console';
 import { Button } from '@/components/common/button';
 import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
 import GroupSummaryCard from '@/components/console/GroupSummaryCard';
-import { canReindex, formatGroupDescription, isJobRunning } from '@/lib/console';
-import { findDocumentGroupDetail } from '@/mocks/console';
-import type { DocumentUploadMode } from '@/types/console.types';
-
-type UploadTarget = {
-  mode: DocumentUploadMode;
-  documentTitle?: string;
-};
-
-const UPLOAD_MOCK_DELAY_MS = 1500;
-
-/**
- * 업로드 API 는 아직 연결되지 않았다.
- * 파일 전송이 끝난 뒤에도 서버 처리(검증, 정규화, 해시 비교, 파싱, 청킹, 임베딩)를 마칠 때까지
- * 전송 중 상태를 유지한다는 흐름만 지연으로 재현한다.
- */
-const requestDocumentUpload = () =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, UPLOAD_MOCK_DELAY_MS);
-  });
+import UploadResultDialog from '@/components/console/UploadResultDialog';
+import {
+  canReindex,
+  formatGroupDescription,
+  isJobRunning,
+  resolveUploadErrorSurface,
+} from '@/lib/console';
+import { findDocumentGroupDetail, uploadDocumentMock } from '@/mocks/console';
+import type {
+  DocumentUploadRequest,
+  DocumentUploadTarget,
+  UploadOutcome,
+} from '@/types/console.types';
 
 export default function DocumentGroupDetailPage() {
   const { groupId } = useParams();
-  const [uploadTarget, setUploadTarget] = useState<UploadTarget | null>(null);
+  const [uploadTarget, setUploadTarget] = useState<DocumentUploadTarget | null>(null);
+  // 다시 업로드는 실패한 원래 모달로 돌아가야 하므로 직전 대상을 남겨 둔다.
+  const [failedTarget, setFailedTarget] = useState<DocumentUploadTarget | null>(null);
+  const [uploadOutcome, setUploadOutcome] = useState<UploadOutcome | null>(null);
+  // 그룹이 사라진 뒤 도달한 업로드는 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다.
+  const [isGroupMissing, setIsGroupMissing] = useState(false);
   const detail = findDocumentGroupDetail(groupId);
 
-  if (!detail) {
+  if (detail === null || isGroupMissing) {
     return (
       <ConsolePage breadcrumb={[{ label: '문서 관리' }]}>
         <ConsolePageHeader
@@ -55,7 +54,50 @@ export default function DocumentGroupDetailPage() {
     const targetDocument = documents.find((document) => document.documentId === documentId);
 
     if (targetDocument) {
-      setUploadTarget({ mode: 'revision', documentTitle: targetDocument.title });
+      setUploadTarget({
+        mode: 'revision',
+        documentId: targetDocument.documentId,
+        documentTitle: targetDocument.title,
+      });
+    }
+  };
+
+  /**
+   * 업로드 실패를 화면으로 나눈다.
+   * 문구를 고르는 일은 하지 않고 서버가 내려준 message 를 그대로 오류 모달에 넘기며,
+   * code 는 어느 화면에 보일지만 정한다. 어느 경우든 기존 문서와 ACTIVE 색인은 그대로 남는다.
+   */
+  const handleUploadFailure = (target: DocumentUploadTarget, error: unknown) => {
+    const failure = toConsoleApiError(error);
+
+    switch (resolveUploadErrorSurface(failure.code)) {
+      case 'page':
+        setIsGroupMissing(true);
+        break;
+      case 'refetch':
+        // 화면이 낡아서 도달한 경우다. 모달을 두지 않고, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+        break;
+      default:
+        setFailedTarget(target);
+        setUploadOutcome({ status: 'failed', message: failure.message });
+    }
+  };
+
+  const handleUpload = async (request: DocumentUploadRequest) => {
+    // 성공이든 실패든 결과 모달로 넘어가므로, 되돌아갈 대상을 미리 붙들어 둔다.
+    const target = uploadTarget;
+
+    try {
+      const result = await uploadDocumentMock(request);
+      // 성공하면 새 판이 잡히고 반영 대기가 하나 늘며 검색 반영 상태가 반영 필요로 바뀐다.
+      // 배경 상세는 갱신된 상태로 보여야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      setUploadOutcome({ status: 'ready', result });
+    } catch (error) {
+      if (target !== null) {
+        handleUploadFailure(target, error);
+      }
+    } finally {
+      setUploadTarget(null);
     }
   };
 
@@ -76,7 +118,7 @@ export default function DocumentGroupDetailPage() {
               variant="console-secondary"
               size="md"
               disabled={isRunning}
-              onClick={() => setUploadTarget({ mode: 'new' })}
+              onClick={() => setUploadTarget({ mode: 'new', groupId: group.groupId })}
             >
               신규 문서 업로드
             </Button>
@@ -94,15 +136,22 @@ export default function DocumentGroupDetailPage() {
       />
       {/* 취소나 닫기로 모달만 닫히고 상세 화면은 그대로 유지한다. */}
       <DocumentUploadDialog
-        mode={uploadTarget?.mode ?? 'new'}
-        open={uploadTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setUploadTarget(null);
-          }
+        target={uploadTarget}
+        onClose={() => setUploadTarget(null)}
+        onUpload={handleUpload}
+      />
+      <UploadResultDialog
+        outcome={uploadOutcome}
+        onClose={() => setUploadOutcome(null)}
+        onReindex={() => {
+          // 검색에 반영하기는 확인 모달을 거쳐야 하므로, 그것을 붙이기 전까지는 결과 모달만 닫는다.
+          setUploadOutcome(null);
         }}
-        targetDocumentName={uploadTarget?.documentTitle}
-        onUpload={requestDocumentUpload}
+        onRetry={() => {
+          // 입력값을 유지하지 않고, 실패한 원래 업로드 모달을 처음 상태로 다시 연다.
+          setUploadOutcome(null);
+          setUploadTarget(failedTarget);
+        }}
       />
     </ConsolePage>
   );
