@@ -2,6 +2,7 @@ import type {
   ConsoleErrorResponse,
   DocumentUploadRequest,
   DocumentUploadResult,
+  ReindexResult,
 } from '@/types/console.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
@@ -27,7 +28,7 @@ const toErrorResponse = (body: unknown): ConsoleErrorResponse | null => {
 };
 
 /**
- * 업로드 엔드포인트가 내려준 오류를 그대로 담는 오류 객체.
+ * 콘솔 엔드포인트가 내려준 오류를 그대로 담는 오류 객체.
  * 화면 문구는 message 를 그대로 쓰고, code 는 어느 화면에 보일지만 정한다.
  */
 export class ConsoleApiError extends Error {
@@ -48,11 +49,11 @@ export const toConsoleApiError = (error: unknown) =>
   error instanceof ConsoleApiError ? error : new ConsoleApiError(FALLBACK_ERROR);
 
 /**
- * 업로드 두 엔드포인트가 요청 형태와 응답 형태를 공유하므로 전송과 오류 변환을 한곳에 모은다.
- * 임베딩까지 끝낸 뒤에 응답이 오는 동기 실행이라 진행률을 받을 자리가 없다.
+ * 콘솔의 실행 엔드포인트가 오류 형태를 공유하므로 전송과 오류 변환을 한곳에 모은다.
+ * 업로드는 임베딩까지, 검색 반영은 ACTIVE 전환까지 끝낸 뒤에 응답이 오는 동기 실행이라 진행률을 받을 자리가 없다.
  */
-async function postUpload(path: string, body: FormData): Promise<DocumentUploadResult> {
-  // Content-Type 은 브라우저가 boundary 와 함께 붙이므로 직접 지정하지 않는다.
+async function postConsole<T>(path: string, body?: FormData): Promise<T> {
+  // FormData 의 Content-Type 은 브라우저가 boundary 와 함께 붙이므로 직접 지정하지 않는다.
   const response = await fetch(`${API_BASE_URL}${path}`, { method: 'POST', body });
 
   if (!response.ok) {
@@ -74,7 +75,7 @@ export function uploadNewDocument(groupId: number, file: File, title: string) {
   body.append('file', file);
   body.append('title', title);
 
-  return postUpload(`/api/admin/document-groups/${groupId}/documents`, body);
+  return postConsole<DocumentUploadResult>(`/api/admin/document-groups/${groupId}/documents`, body);
 }
 
 /**
@@ -85,7 +86,7 @@ export function uploadDocumentRevision(documentId: number, file: File) {
   const body = new FormData();
   body.append('file', file);
 
-  return postUpload(`/api/admin/documents/${documentId}/versions`, body);
+  return postConsole<DocumentUploadResult>(`/api/admin/documents/${documentId}/versions`, body);
 }
 
 /** 업로드 모달이 만든 요청을 mode 에 따라 두 엔드포인트로 나눈다. */
@@ -93,4 +94,12 @@ export function uploadDocument(request: DocumentUploadRequest) {
   return request.mode === 'new'
     ? uploadNewDocument(request.groupId, request.file, request.title)
     : uploadDocumentRevision(request.documentId, request.file);
+}
+
+/**
+ * 검색 반영 시작. 최신 READY 판 조합으로 새 검색 버전을 만들고 검증한 뒤 ACTIVE 로 전환한다.
+ * Request Body 가 없고, 다시 시도도 별도 엔드포인트 없이 이 호출을 반복한다.
+ */
+export function reindexDocumentGroup(groupId: number) {
+  return postConsole<ReindexResult>(`/api/admin/document-groups/${groupId}/reindex`);
 }

@@ -3,6 +3,7 @@ import type {
   ChunkStats,
   ConsoleDocument,
   DocumentGroupDetail,
+  ReindexResult,
   SearchStatus,
   UploadErrorCode,
 } from '@/types/console.types';
@@ -35,6 +36,21 @@ export const isJobRunning = (detail: DocumentGroupDetail) =>
 // 검색 버전은 색인 순번이므로 #을 붙여 표기하고, 색인한 적이 없으면 값이 없음을 나타낸다.
 export const formatActiveIndexVersion = (versionNo: number | null) =>
   versionNo === null ? '없음' : `#${versionNo}`;
+
+/**
+ * 완료 모달의 검색 버전 한 줄. 직전 ACTIVE 가 있으면 전환을 화살표로 잇고, 첫 반영이면 새 버전만 적는다.
+ * 응답에 문서 수와 청크 수가 없으므로 이 한 줄이 완료 모달의 본문 전부다.
+ */
+export const formatIndexVersionTransition = ({
+  indexVersion,
+  previousIndexVersion,
+}: ReindexResult) => {
+  const nextVersion = formatActiveIndexVersion(indexVersion.versionNo);
+
+  return previousIndexVersion === null
+    ? `검색 버전 ${nextVersion}`
+    : `검색 버전 ${formatActiveIndexVersion(previousIndexVersion.versionNo)} → ${nextVersion}`;
+};
 
 export const formatPendingCount = (count: number) => (count === 0 ? '없음' : `${count}건`);
 

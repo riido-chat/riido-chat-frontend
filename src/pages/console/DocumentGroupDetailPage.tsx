@@ -9,6 +9,7 @@ import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
 import GroupSummaryCard from '@/components/console/GroupSummaryCard';
+import ReindexDialog from '@/components/console/ReindexDialog';
 import UploadResultDialog from '@/components/console/UploadResultDialog';
 import {
   canReindex,
@@ -16,10 +17,15 @@ import {
   isJobRunning,
   resolveUploadErrorSurface,
 } from '@/lib/console';
-import { findDocumentGroupDetail, uploadDocumentMock } from '@/mocks/console';
+import {
+  findDocumentGroupDetail,
+  reindexDocumentGroupMock,
+  uploadDocumentMock,
+} from '@/mocks/console';
 import type {
   DocumentUploadRequest,
   DocumentUploadTarget,
+  ReindexStep,
   UploadOutcome,
 } from '@/types/console.types';
 
@@ -29,6 +35,8 @@ export default function DocumentGroupDetailPage() {
   // 다시 업로드는 실패한 원래 모달로 돌아가야 하므로 직전 대상을 남겨 둔다.
   const [failedTarget, setFailedTarget] = useState<DocumentUploadTarget | null>(null);
   const [uploadOutcome, setUploadOutcome] = useState<UploadOutcome | null>(null);
+  // 검색 반영은 확인, 잠금, 완료 또는 실패를 한 모달에서 단계로 보인다. null 이면 닫힌 상태다.
+  const [reindexStep, setReindexStep] = useState<ReindexStep | null>(null);
   // 그룹이 사라진 뒤 도달한 업로드는 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다.
   const [isGroupMissing, setIsGroupMissing] = useState(false);
   const detail = findDocumentGroupDetail(groupId);
@@ -90,6 +98,24 @@ export default function DocumentGroupDetailPage() {
     }
   };
 
+  /**
+   * 검색 반영 시작. 응답이 올 때까지 잠금 모달로 화면 전체를 막고, 응답이 오면 바로 완료나 실패로 넘어간다.
+   * 실패 모달의 다시 시도도 별도 엔드포인트 없이 이 호출을 반복한다.
+   */
+  const handleReindex = async () => {
+    setReindexStep({ status: 'running' });
+
+    try {
+      const result = await reindexDocumentGroupMock(group.groupId);
+      // 성공하면 새 검색 버전이 ACTIVE 가 되고 반영 대기가 없어진다.
+      // 확인을 누르기 전에 배경 상세가 갱신되어 있어야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      setReindexStep({ status: 'done', result });
+    } catch (error) {
+      // 실패 모달은 한 종류이고 본문은 응답의 message 그대로다. 기존 ACTIVE 색인과 검색 코퍼스는 그대로 남는다.
+      setReindexStep({ status: 'failed', message: toConsoleApiError(error).message });
+    }
+  };
+
   const handleUpload = async (request: DocumentUploadRequest) => {
     // 성공이든 실패든 결과 모달로 넘어가므로, 되돌아갈 대상을 미리 붙들어 둔다.
     const target = uploadTarget;
@@ -130,7 +156,11 @@ export default function DocumentGroupDetailPage() {
               신규 문서 업로드
             </Button>
             {isReindexAvailable ? (
-              <Button variant="console-primary" size="md">
+              <Button
+                variant="console-primary"
+                size="md"
+                onClick={() => setReindexStep({ status: 'confirm' })}
+              >
                 검색에 반영하기
               </Button>
             ) : (
@@ -164,14 +194,24 @@ export default function DocumentGroupDetailPage() {
         outcome={uploadOutcome}
         onClose={() => setUploadOutcome(null)}
         onReindex={() => {
-          // 검색에 반영하기는 확인 모달을 거쳐야 하므로, 그것을 붙이기 전까지는 결과 모달만 닫는다.
+          // 결과 모달을 닫고 검색 반영 확인 모달로 넘어간다. 반영 대상 버전은 화면에 나열하지 않는다.
           setUploadOutcome(null);
+          setReindexStep({ status: 'confirm' });
         }}
         onRetry={() => {
           // 입력값을 유지하지 않고, 실패한 원래 업로드 모달을 처음 상태로 다시 연다.
           setUploadOutcome(null);
           setUploadTarget(failedTarget);
         }}
+      />
+      <ReindexDialog
+        step={reindexStep}
+        onClose={() => {
+          // 완료의 확인과 실패의 닫기 모두 모달만 닫는다.
+          // 닫힐 때 상세 재조회 1회를 안전망으로 두기로 했으므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+          setReindexStep(null);
+        }}
+        onStart={() => void handleReindex()}
       />
     </ConsolePage>
   );

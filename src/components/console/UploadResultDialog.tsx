@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@/components/common/dialog';
+import WarningMark from '@/components/console/WarningMark';
 import { formatChunkStats } from '@/lib/console';
 import { cn } from '@/lib/utils';
 import type { UploadOutcome } from '@/types/console.types';
@@ -79,15 +80,7 @@ export default function UploadResultDialog({
         className={cn(RESULT_DIALOG_CLASS, isReady ? 'border-line-normal' : 'border-rc-gray-200')}
       >
         <div className="flex w-full items-center gap-2">
-          {/* 실패는 무채색 카드에 경고 표시만 얹는다. 붉은색은 쓰지 않는다. */}
-          {!isReady && (
-            <span
-              aria-hidden
-              className="bg-rc-iris-100 text-caption text-rc-iris-700 flex size-5.5 shrink-0 items-center justify-center rounded-full font-semibold"
-            >
-              !
-            </span>
-          )}
+          {!isReady && <WarningMark />}
           <DialogTitle className="text-body-1 leading-normal font-semibold">
             {isReady ? READY_TITLE : FAILED_TITLE}
           </DialogTitle>

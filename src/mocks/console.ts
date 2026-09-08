@@ -6,6 +6,7 @@ import type {
   DocumentGroupSummary,
   DocumentUploadRequest,
   DocumentUploadResult,
+  ReindexResult,
 } from '@/types/console.types';
 
 export const documentGroupDetails: DocumentGroupDetail[] = [
@@ -308,4 +309,33 @@ export function uploadDocumentMock(request: DocumentUploadRequest) {
   return request.mode === 'new'
     ? uploadNewDocumentMock(request.groupId, request.file, request.title)
     : uploadDocumentRevisionMock(request.documentId, request.file);
+}
+
+// 조합 확정과 임베딩 확인과 코퍼스 교체까지 마친 뒤 응답하므로, 업로드보다 긴 지연으로 잠금 모달을 재현한다.
+const MOCK_REINDEX_DELAY_MS = 2500;
+
+/**
+ * 검색 반영 API 목. 명세의 오류는 처리 중 실패 하나뿐이고 목에서는 재현할 원인이 없으므로 항상 성공한다.
+ * 상세 조회 API 가 없어 목 데이터는 바꾸지 않으며, 배경 상세 갱신은 상세 조회를 붙일 때 재조회로 맡긴다.
+ */
+export async function reindexDocumentGroupMock(groupId: number): Promise<ReindexResult> {
+  await delay(MOCK_REINDEX_DELAY_MS);
+
+  const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
+
+  // 상세 화면이 없는 그룹에서는 버튼에 닿을 수 없으므로, 명세에 있는 유일한 오류로 처리 중 실패를 흉내 낸다.
+  if (detail === undefined) {
+    throwRejection({ code: 'INTERNAL_ERROR', message: '다시 시도해 주세요.' });
+  }
+
+  const previousIndexVersion = detail.summary.activeIndexVersion;
+
+  return {
+    indexRunId: nextMockId(),
+    indexVersion: {
+      indexVersionId: nextMockId(),
+      versionNo: (previousIndexVersion?.versionNo ?? 0) + 1,
+    },
+    previousIndexVersion,
+  };
 }
