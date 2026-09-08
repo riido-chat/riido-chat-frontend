@@ -208,6 +208,7 @@ export default function DocumentUploadDialog({
             size="md"
             disabled={!canUpload}
             onClick={() => void handleUpload()}
+            className={isUploading ? 'animate-pulse' : ''}
           >
             {isUploading ? '업로드 중' : '업로드'}
           </Button>

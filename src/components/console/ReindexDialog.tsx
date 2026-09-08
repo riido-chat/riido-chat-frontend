@@ -87,7 +87,9 @@ export default function ReindexDialog({ step, onClose, onStart }: ReindexDialogP
           <DialogTitle className="text-body-1 leading-normal font-semibold">{title}</DialogTitle>
         </div>
 
-        <DialogDescription className="text-label text-label-normal">{message}</DialogDescription>
+        <DialogDescription className="text-label text-label-normal animate-pulse">
+          {message}
+        </DialogDescription>
 
         {/* 잠금 단계는 뱃지와 버튼이 없어 본문까지만 그린다. */}
         {shownStep.status === 'confirm' && (
