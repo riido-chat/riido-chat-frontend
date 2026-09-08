@@ -39,7 +39,8 @@ export type GroupSource = {
   documentCount: number;
 };
 
-export type ActiveIndexVersion = {
+// 검색 버전 한 건을 가리키는 값. 요약의 ACTIVE 색인과 검색 반영 응답의 전후 버전이 같은 형태를 쓴다.
+export type IndexVersion = {
   indexVersionId: number;
   // 화면에 검색 버전으로 나타내는 색인 순번
   versionNo: number;
@@ -48,7 +49,7 @@ export type ActiveIndexVersion = {
 // 상세 조회의 요약 영역. 요약 카드가 그대로 가져다 쓴다.
 export type SearchIndexSummary = {
   // ACTIVE 색인. 아직 색인한 적이 없으면 null이다.
-  activeIndexVersion: ActiveIndexVersion | null;
+  activeIndexVersion: IndexVersion | null;
   // 반영 대기 건수. 문서 가운데 appliedStatus 가 UNAPPLIED 인 문서의 수이다.
   pendingCount: number;
   searchStatus: SearchStatus;
@@ -142,11 +143,19 @@ export type UploadErrorCode =
   | 'INVALID_REQUEST';
 
 /**
+ * 검색 반영 엔드포인트가 내려주는 오류 코드.
+ * 처리 중 실패는 원인을 가리지 않고 INTERNAL_ERROR 하나로 내려오며, 원인은 서버 로그에만 남는다.
+ */
+export type ReindexErrorCode = 'INTERNAL_ERROR';
+
+export type ConsoleErrorCode = UploadErrorCode | ReindexErrorCode;
+
+/**
  * 접수 전 거절과 접수 뒤 실패가 함께 쓰는 오류 응답.
  * 화면에 보이는 문장은 message 그대로이고, code 는 어느 화면에 보일지만 정한다.
  */
 export type ConsoleErrorResponse = {
-  code: UploadErrorCode;
+  code: ConsoleErrorCode;
   message: string;
 };
 
@@ -156,5 +165,29 @@ export type ConsoleErrorResponse = {
  */
 export type UploadOutcome =
   | { status: 'ready'; result: DocumentUploadResult }
+  // 화면에 보이는 문장은 응답의 message 그대로다.
+  | { status: 'failed'; message: string };
+
+/**
+ * 검색 반영 성공 응답. ACTIVE 전환까지 마친 뒤에 돌아온다.
+ * 진행 단계와 문서 수와 청크 수는 응답에 없으므로 완료 모달은 검색 버전 번호만 쓴다.
+ */
+export type ReindexResult = {
+  // 로그와 지원 문의 추적에만 쓰는 값이므로 화면에 표시하지 않는다.
+  indexRunId: number;
+  // 이번에 ACTIVE 가 된 검색 버전
+  indexVersion: IndexVersion;
+  // 이번에 INACTIVE 가 된 직전 ACTIVE 검색 버전. 첫 반영이면 null 이다.
+  previousIndexVersion: IndexVersion | null;
+};
+
+/**
+ * 검색 반영 모달의 단계. 확인에서 시작해 잠금을 거쳐 완료나 실패로 끝난다.
+ * 실행이 동기라 잠금 단계에는 진행률이 없고, 실패에서 다시 시도하면 잠금으로 되돌아간다.
+ */
+export type ReindexStep =
+  | { status: 'confirm' }
+  | { status: 'running' }
+  | { status: 'done'; result: ReindexResult }
   // 화면에 보이는 문장은 응답의 message 그대로다.
   | { status: 'failed'; message: string };
