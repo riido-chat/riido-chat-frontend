@@ -96,11 +96,17 @@ function AssistantBubble({
               },
               pre({ children }) {
                 return (
-                  <pre className="bg-rc-gray-900 text-rc-gray-0 my-3 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
+                  <pre className="bg-rc-gray-900 text-rc-gray-0 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
                     {children}
                   </pre>
                 );
               },
+              ol: ({ children }) => (
+                <ol className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">{children}</ol>
+              ),
+              ul: ({ children }) => (
+                <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
+              ),
             }}
           >
             {response.answer.answerMarkdown}
