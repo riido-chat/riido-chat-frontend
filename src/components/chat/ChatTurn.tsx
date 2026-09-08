@@ -101,8 +101,10 @@ function AssistantBubble({
                   </pre>
                 );
               },
-              ol: ({ children }) => (
-                <ol className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">{children}</ol>
+              ol: ({ children, start }) => (
+                <ol start={start} className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">
+                  {children}
+                </ol>
               ),
               ul: ({ children }) => (
                 <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
