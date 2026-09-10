@@ -16,24 +16,17 @@ type DocumentGroupDetailViewProps = {
   detail: DocumentGroupDetail;
   /** 실행이 끝나 배경 상세가 바뀌었을 때의 재조회 */
   onRefetch: () => void;
-  /** 그룹이 사라진 뒤 도달한 실행은 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다. */
-  onGroupMissing: () => void;
 };
 
 /** 조회가 끝난 문서 그룹 상세 화면. 업로드, 검색 반영, GitBook 수집 흐름을 이 안에서 연다. */
 export default function DocumentGroupDetailView({
   detail,
   onRefetch,
-  onGroupMissing,
 }: DocumentGroupDetailViewProps) {
   const { group, summary, documents } = detail;
 
   const reindexFlow = useReindexFlow({ groupId: group.groupId, onRefetch });
-  const uploadFlow = useUploadFlow({
-    onRefetch,
-    onGroupMissing,
-    onRequestReindex: reindexFlow.openConfirm,
-  });
+  const uploadFlow = useUploadFlow({ onRefetch, onRequestReindex: reindexFlow.openConfirm });
   const gitbookSyncFlow = useGitbookSyncFlow({
     groupId: group.groupId,
     rootUrl: findGitbookSource(detail)?.rootUrl ?? null,
