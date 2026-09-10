@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
-import { toConsoleApiError } from '@/api/console';
+import { reindexDocumentGroup, toConsoleApiError } from '@/api/console';
 import ReindexDialog from '@/components/console/ReindexDialog';
-import { reindexDocumentGroupMock } from '@/mocks/console';
 import type { ReindexStep } from '@/types/console.types';
 
 type ReindexFlowParams = {
@@ -27,7 +26,7 @@ export function useReindexFlow({ groupId, onRefetch }: ReindexFlowParams) {
     setStep({ status: 'running' });
 
     try {
-      const result = await reindexDocumentGroupMock(groupId);
+      const result = await reindexDocumentGroup(groupId);
       // 성공하면 새 검색 버전이 ACTIVE 가 되고 반영 대기가 없어진다. 확인을 누르기 전에 배경 상세가 갱신되어 있어야 한다.
       onRefetch();
       setStep({ status: 'done', result });
