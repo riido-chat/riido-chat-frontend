@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
-import { toConsoleApiError, uploadNewDocument } from '@/api/console';
+import { toConsoleApiError, uploadDocument } from '@/api/console';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
 import UploadResultDialog from '@/components/console/UploadResultDialog';
-import { uploadDocumentRevisionMock } from '@/mocks/console';
 import type {
   ConsoleDocument,
   DocumentUploadRequest,
@@ -35,11 +34,7 @@ export function useUploadFlow({ onRefetch, onRequestReindex }: UploadFlowParams)
     const uploadingTarget = target;
 
     try {
-      // 신규 업로드는 실제 API 를 부르고, 수정본 업로드는 그 API 를 붙일 때까지 목을 쓴다.
-      const result =
-        request.mode === 'new'
-          ? await uploadNewDocument(request.groupId, request.file, request.title)
-          : await uploadDocumentRevisionMock(request.documentId, request.file);
+      const result = await uploadDocument(request);
       // 성공하면 새 판이 잡히고 반영 대기가 하나 늘며 검색 반영 상태가 반영 필요로 바뀐다.
       onRefetch();
       setOutcome({ status: 'ready', result });

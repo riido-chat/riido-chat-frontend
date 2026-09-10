@@ -1,23 +1,12 @@
 import { ConsoleApiError } from '@/api/console';
-import { isMarkdownFileName, normalizeSourceUrl } from '@/lib/console';
-import type {
-  ConsoleErrorResponse,
-  DocumentUploadResult,
-  GitbookSyncResult,
-  ReindexResult,
-} from '@/types/console.types';
+import { normalizeSourceUrl } from '@/lib/console';
+import type { ConsoleErrorResponse, GitbookSyncResult, ReindexResult } from '@/types/console.types';
 
 /**
- * 목록 조회와 상세 조회와 신규 문서 업로드는 실제 API 를 쓰므로 여기에는 나머지 실행 엔드포인트 목만 남아 있다.
+ * 조회와 업로드는 실제 API 를 쓰므로 여기에는 검색 반영과 GitBook 수집 목만 남아 있다.
  * 상세 목 데이터가 없어져 그룹이나 문서를 찾아 판정하던 거절은 재현하지 않고, 요청만 보고 판정할 수 있는 거절만 남긴다.
  * 실행이 끝나도 실제 서버는 바뀌지 않으므로, 실행 뒤 재조회로 갱신되는 배경 상세는 그대로다.
  */
-
-// 파일 조건은 신규 업로드와 같다. 초과분은 접수 전 거절이므로 실행도 원본도 만들어지지 않는다.
-const MAX_UPLOAD_FILE_SIZE = 5 * 1024 * 1024;
-
-// 임베딩까지 마친 응답이 도착할 때까지 이어지는 전송 중 상태를 지연으로 재현한다.
-const MOCK_UPLOAD_DELAY_MS = 1500;
 
 const delay = (durationMs: number) =>
   new Promise<void>((resolve) => {
@@ -29,67 +18,9 @@ function throwRejection(body: ConsoleErrorResponse): never {
   throw new ConsoleApiError(body);
 }
 
-/**
- * 파일 조건 검증. 어긋나면 접수 전 거절이다.
- * UTF-8 여부는 본문을 읽어야 판정할 수 있으므로 목에서는 다루지 않는다.
- */
-function findFileRejection(file: File): ConsoleErrorResponse | null {
-  if (!isMarkdownFileName(file.name)) {
-    return {
-      code: 'INVALID_FILE',
-      message: '.md 확장자의 Markdown 파일만 업로드할 수 있습니다.',
-    };
-  }
-
-  if (file.size === 0) {
-    return {
-      code: 'INVALID_FILE',
-      message: '빈 Markdown 파일은 업로드할 수 없습니다.',
-    };
-  }
-
-  if (file.size > MAX_UPLOAD_FILE_SIZE) {
-    return { code: 'FILE_TOO_LARGE', message: '파일 용량이 5MB 를 넘습니다.' };
-  }
-
-  return null;
-}
-
 // 서버가 부여하는 ID 는 화면에 쓰이지 않으므로 호출마다 늘어나는 값으로 채운다.
 let mockIdSequence = 900;
 const nextMockId = () => (mockIdSequence += 1);
-
-/** 청킹 결과는 파일마다 다르지만 화면 확인에는 개수만 필요하므로 고정된 집계로 돌려준다. */
-const buildUploadResult = (documentId: number, versionNo: number): DocumentUploadResult => ({
-  ingestionRunId: nextMockId(),
-  documentId,
-  documentVersionId: nextMockId(),
-  versionNo,
-  sectionCount: 2,
-  chunkCount: 2,
-  chunkStats: { added: 2, changed: 0, deleted: 0, reused: 0 },
-});
-
-/**
- * 수정본 업로드 목. 파일 조건만 판정한다.
- * 대상 문서를 찾아야 하는 NOT_FOUND 와 DOCUMENT_NOT_REVISABLE, 직전 판과 비교해야 하는 NO_CHANGE 는 재현하지 않는다.
- * 실제 API 와 요청 형태와 응답 형태가 같으므로, 백엔드가 준비되면 api/console 의 uploadDocumentRevision 으로 바꾸기만 하면 된다.
- */
-export async function uploadDocumentRevisionMock(
-  documentId: number,
-  file: File,
-): Promise<DocumentUploadResult> {
-  await delay(MOCK_UPLOAD_DELAY_MS);
-
-  const fileRejection = findFileRejection(file);
-
-  if (fileRejection !== null) {
-    throwRejection(fileRejection);
-  }
-
-  // 직전 판 번호를 알 수 없으므로, 수정본이 만드는 가장 이른 판 번호로 돌려준다.
-  return buildUploadResult(documentId, 2);
-}
 
 // 조합 확정과 임베딩 확인과 코퍼스 교체까지 마친 뒤 응답하므로, 업로드보다 긴 지연으로 잠금 모달을 재현한다.
 const MOCK_REINDEX_DELAY_MS = 2500;
