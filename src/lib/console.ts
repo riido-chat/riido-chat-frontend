@@ -5,7 +5,6 @@ import type {
   ConsoleErrorCode,
   DocumentGroupDetail,
   GitbookSyncCounts,
-  GitbookSyncErrorCode,
   GitbookSyncResult,
   GroupSource,
   ReindexResult,
@@ -132,30 +131,6 @@ const UPLOAD_ERROR_SURFACES: Record<UploadErrorCode, UploadErrorSurface> = {
  */
 export const resolveUploadErrorSurface = (code: ConsoleErrorCode): UploadErrorSurface => {
   const surfaces: Partial<Record<ConsoleErrorCode, UploadErrorSurface>> = UPLOAD_ERROR_SURFACES;
-
-  return surfaces[code] ?? 'dialog';
-};
-
-/**
- * GitBook 수집 오류를 어느 화면으로 보낼지 정하는 표. 구분은 업로드와 같다.
- * 422 와 502 를 모달을 유지한 채 필드 아래 도움말로 보이는 5-1 오류 상태 화면은 추후 사항이라 아직 구현하지 않았고,
- * 그때까지는 다른 실패와 같이 오류 모달에 message 를 그대로 띄운다.
- */
-const GITBOOK_SYNC_ERROR_SURFACES: Record<GitbookSyncErrorCode, UploadErrorSurface> = {
-  INVALID_REQUEST: 'dialog',
-  SOURCE_LIST_FAILED: 'dialog',
-  NOT_FOUND: 'page',
-  JOB_IN_PROGRESS: 'refetch',
-  INTERNAL_ERROR: 'dialog',
-};
-
-/**
- * GitBook 수집의 오류 코드로 화면을 정한다.
- * 이 엔드포인트가 올리는 오류는 404, 409, 422, 502 넷뿐이고 그 밖의 예외는 본문을 읽을 수 없으므로 오류 모달로 떨어뜨린다.
- */
-export const resolveGitbookSyncErrorSurface = (code: ConsoleErrorCode): UploadErrorSurface => {
-  const surfaces: Partial<Record<ConsoleErrorCode, UploadErrorSurface>> =
-    GITBOOK_SYNC_ERROR_SURFACES;
 
   return surfaces[code] ?? 'dialog';
 };

@@ -156,7 +156,7 @@ export type GitbookSyncErrorCode =
   // 접수 전 거절. 명세는 필드 아래 도움말로 정했지만 그 화면은 추후 사항이라 아직 오류 모달로 보인다.
   | 'INVALID_REQUEST'
   | 'SOURCE_LIST_FAILED'
-  // 정상 흐름에서는 버튼이 비활성이라 도달하지 않는 방어용 코드
+  // 정상 흐름에서는 버튼이 비활성이라 도달하지 않으므로 화면에서 따로 다루지 않는 코드
   | 'NOT_FOUND'
   | 'JOB_IN_PROGRESS'
   // 오류 본문을 읽지 못했을 때 오류 모달에 띄우는 대비책
