@@ -2,6 +2,7 @@ import type {
   ConsoleErrorResponse,
   DocumentUploadRequest,
   DocumentUploadResult,
+  GitbookSyncResult,
   ReindexResult,
 } from '@/types/console.types';
 
@@ -48,13 +49,22 @@ export class ConsoleApiError extends Error {
 export const toConsoleApiError = (error: unknown) =>
   error instanceof ConsoleApiError ? error : new ConsoleApiError(FALLBACK_ERROR);
 
+// 업로드는 multipart 로, GitBook 수집은 JSON 으로 보내고, 검색 반영은 본문이 없다.
+type ConsoleRequestBody = FormData | Record<string, unknown>;
+
 /**
  * 콘솔의 실행 엔드포인트가 오류 형태를 공유하므로 전송과 오류 변환을 한곳에 모은다.
- * 업로드는 임베딩까지, 검색 반영은 ACTIVE 전환까지 끝낸 뒤에 응답이 오는 동기 실행이라 진행률을 받을 자리가 없다.
+ * 업로드는 임베딩까지, 검색 반영은 ACTIVE 전환까지, GitBook 수집은 페이지별 처리까지 끝낸 뒤에 응답이 오는 동기 실행이라
+ * 진행률을 받을 자리가 없다.
  */
-async function postConsole<T>(path: string, body?: FormData): Promise<T> {
-  // FormData 의 Content-Type 은 브라우저가 boundary 와 함께 붙이므로 직접 지정하지 않는다.
-  const response = await fetch(`${API_BASE_URL}${path}`, { method: 'POST', body });
+async function postConsole<T>(path: string, body?: ConsoleRequestBody): Promise<T> {
+  // FormData 의 Content-Type 은 브라우저가 boundary 와 함께 붙이므로 JSON 본문에만 직접 지정한다.
+  const isJsonBody = body !== undefined && !(body instanceof FormData);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: isJsonBody ? { 'Content-Type': 'application/json' } : undefined,
+    body: isJsonBody ? JSON.stringify(body) : body,
+  });
 
   if (!response.ok) {
     // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
@@ -102,4 +112,15 @@ export function uploadDocument(request: DocumentUploadRequest) {
  */
 export function reindexDocumentGroup(groupId: number) {
   return postConsole<ReindexResult>(`/api/admin/document-groups/${groupId}/reindex`);
+}
+
+/**
+ * GitBook 수집 시작. 루트 URL 의 페이지 목록과 본문을 읽어 페이지마다 콘솔 업로드와 같은 규칙을 적용하는 배치를 돌린다.
+ * 같은 루트로 다시 부르는 것이 곧 재수집이고, 새 루트를 주면 원천이 하나 더 만들어진다.
+ * 페이지 하나가 실패해도 배치는 계속 진행해 200 의 failures 로 알리므로, 오류 응답은 목록 조회 전 거절뿐이다.
+ */
+export function syncGitbook(groupId: number, sourceUrl: string) {
+  return postConsole<GitbookSyncResult>(`/api/admin/document-groups/${groupId}/gitbook-sync`, {
+    sourceUrl,
+  });
 }

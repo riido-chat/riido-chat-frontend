@@ -148,7 +148,21 @@ export type UploadErrorCode =
  */
 export type ReindexErrorCode = 'INTERNAL_ERROR';
 
-export type ConsoleErrorCode = UploadErrorCode | ReindexErrorCode;
+/**
+ * GitBook 수집 엔드포인트가 내려주는 오류 코드.
+ * 페이지 하나가 실패해도 배치는 멈추지 않고 200 의 failures 로 오므로, 거절 넷과 본문을 읽을 수 없을 때의 대비책 하나뿐이다.
+ */
+export type GitbookSyncErrorCode =
+  // 접수 전 거절. 명세는 필드 아래 도움말로 정했지만 그 화면은 추후 사항이라 아직 오류 모달로 보인다.
+  | 'INVALID_REQUEST'
+  | 'SOURCE_LIST_FAILED'
+  // 정상 흐름에서는 버튼이 비활성이라 도달하지 않으므로 화면에서 따로 다루지 않는 코드
+  | 'NOT_FOUND'
+  | 'JOB_IN_PROGRESS'
+  // 오류 본문을 읽지 못했을 때 오류 모달에 띄우는 대비책
+  | 'INTERNAL_ERROR';
+
+export type ConsoleErrorCode = UploadErrorCode | ReindexErrorCode | GitbookSyncErrorCode;
 
 /**
  * 접수 전 거절과 접수 뒤 실패가 함께 쓰는 오류 응답.
@@ -189,5 +203,61 @@ export type ReindexStep =
   | { status: 'confirm' }
   | { status: 'running' }
   | { status: 'done'; result: ReindexResult }
+  // 화면에 보이는 문장은 응답의 message 그대로다.
+  | { status: 'failed'; message: string };
+
+/**
+ * GitBook 수집 모달이 여는 대상.
+ * 원천이 있으면 상세 조회의 rootUrl 을 읽기 전용으로 보이고, 없으면 null 이라 루트 URL 을 입력으로 받는다.
+ * 여러 GitBook 은 API 만 허용하고 1차 화면은 원천 하나만 다루므로 다른 URL 입력 자체를 막는다.
+ */
+export type GitbookSyncTarget = {
+  groupId: number;
+  rootUrl: string | null;
+};
+
+/**
+ * 페이지별 처리 결과 집계. created + updated + noChange + failed = total 이고,
+ * removed 는 이번 목록에 없어 enabled=false 로 바뀐 문서 수라 total 에 들어가지 않는다.
+ */
+export type GitbookSyncCounts = {
+  // 읽어 온 페이지 수
+  total: number;
+  created: number;
+  updated: number;
+  noChange: number;
+  removed: number;
+  failed: number;
+};
+
+/** 실패한 페이지 한 건. 실패가 없으면 failures 는 빈 배열이다. */
+export type GitbookSyncFailure = {
+  // 요청 루트 기준 상대 경로
+  documentKey: string;
+  title: string;
+  // 실패 행을 개별로 지목하는 데 쓰는 실행 ID
+  ingestionRunId: number;
+  // 목록 행에 들어가는 축약 문장. 오류 모달의 message 와 달리 행 폭에 맞춘 짧은 문장이다.
+  message: string;
+};
+
+/**
+ * GitBook 수집 성공 응답. 페이지 목록 조회와 페이지별 처리를 모두 요청 안에서 끝낸 뒤 돌아온다.
+ * batchId, groupId, status, stage, startedAt, finishedAt 은 응답에 없다.
+ */
+export type GitbookSyncResult = {
+  // 이번 수집이 붙은 원천. 같은 루트로 다시 부르면 같은 값이 온다. 화면에는 쓰지 않는다.
+  groupSourceId: number;
+  rootUrl: string;
+  counts: GitbookSyncCounts;
+  failures: GitbookSyncFailure[];
+};
+
+/**
+ * GitBook 수집이 끝난 결과. 페이지 단위 실패는 200 의 counts.failed 로 집계되므로 done 안에 들어 있고,
+ * failed 는 요청 자체가 거절되거나 본문을 읽지 못한 경우의 오류 모달이다.
+ */
+export type GitbookSyncOutcome =
+  | { status: 'done'; result: GitbookSyncResult }
   // 화면에 보이는 문장은 응답의 message 그대로다.
   | { status: 'failed'; message: string };

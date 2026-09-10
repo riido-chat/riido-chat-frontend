@@ -1,15 +1,7 @@
 import { SearchStatusBadge } from '@/components/console/StatusBadge';
+import SummaryItem from '@/components/console/SummaryItem';
 import { formatActiveIndexVersion, formatPendingCount } from '@/lib/console';
 import type { SearchIndexSummary } from '@/types/console.types';
-
-function SummaryItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex shrink-0 flex-col gap-1 whitespace-nowrap">
-      <p className="text-caption text-label-alternative">{label}</p>
-      <p className="text-body-1 text-label-normal font-semibold">{value}</p>
-    </div>
-  );
-}
 
 /**
  * 문서 그룹 상세의 요약 카드.

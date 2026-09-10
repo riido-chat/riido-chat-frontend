@@ -2,7 +2,11 @@ import type {
   AppliedStatus,
   ChunkStats,
   ConsoleDocument,
+  ConsoleErrorCode,
   DocumentGroupDetail,
+  GitbookSyncCounts,
+  GitbookSyncResult,
+  GroupSource,
   ReindexResult,
   SearchStatus,
   UploadErrorCode,
@@ -123,10 +127,13 @@ const UPLOAD_ERROR_SURFACES: Record<UploadErrorCode, UploadErrorSurface> = {
 
 /**
  * 오류 코드로 화면을 정한다. 문구를 고르는 일은 하지 않고, 어느 화면에 보일지만 판정한다.
- * 명세에 없는 코드가 와도 사용자가 원인을 볼 수 있도록 오류 모달로 떨어뜨린다.
+ * 다른 엔드포인트의 코드나 명세에 없는 코드가 와도 사용자가 원인을 볼 수 있도록 오류 모달로 떨어뜨린다.
  */
-export const resolveUploadErrorSurface = (code: UploadErrorCode): UploadErrorSurface =>
-  UPLOAD_ERROR_SURFACES[code] ?? 'dialog';
+export const resolveUploadErrorSurface = (code: ConsoleErrorCode): UploadErrorSurface => {
+  const surfaces: Partial<Record<ConsoleErrorCode, UploadErrorSurface>> = UPLOAD_ERROR_SURFACES;
+
+  return surfaces[code] ?? 'dialog';
+};
 
 // 청크 수는 천 단위 구분 기호를 붙여 적는다.
 const formatChunkCount = (count: number) => count.toLocaleString('ko-KR');
@@ -137,3 +144,27 @@ const formatChunkCount = (count: number) => count.toLocaleString('ko-KR');
  */
 export const formatChunkStats = ({ added, changed, deleted, reused }: ChunkStats) =>
   `추가 ${formatChunkCount(added)}, 변경 ${formatChunkCount(changed)}, 삭제 ${formatChunkCount(deleted)}, 재사용 ${formatChunkCount(reused)} 청크`;
+
+/**
+ * GitBook 수집 모달에 읽기 전용으로 보일 원천을 고른다.
+ * 여러 GitBook 은 API 만 허용하고 1차 화면은 원천 하나만 다루므로 첫 GitBook 원천만 쓴다.
+ */
+export const findGitbookSource = (detail: DocumentGroupDetail): GroupSource | null =>
+  detail.sources.find((source) => source.provider === 'GITBOOK') ?? null;
+
+// 서버가 끝 슬래시를 무시하므로 요청 전에 같은 규칙으로 정리해 같은 루트가 같은 원천에 붙게 한다.
+export const normalizeSourceUrl = (sourceUrl: string) => sourceUrl.trim().replace(/\/+$/, '');
+
+/**
+ * 결과 모달의 대상 한 줄. 루트 URL 은 프로토콜을 떼어 적고 읽어 온 페이지 수를 잇는다.
+ * counts.total 은 페이지별 처리 결과 집계의 합이라 숫자 다섯 개와 따로 이 줄에만 보인다.
+ */
+export const formatGitbookSyncTarget = ({ rootUrl, counts }: GitbookSyncResult) =>
+  `${rootUrl.replace(/^https?:\/\//, '')}, ${counts.total.toLocaleString('ko-KR')} 페이지`;
+
+/**
+ * 수집 결과 모달에서 검색에 반영하기를 누를 수 있는지 판정한다.
+ * 신규, 변경, 제거가 모두 0 이면 반영 대기가 늘지 않았으므로 닫기만 남긴다. 서버는 이 경우에도 요청을 거부하지 않는 FE 규칙이다.
+ */
+export const hasGitbookSyncChanges = ({ created, updated, removed }: GitbookSyncCounts) =>
+  created + updated + removed > 0;
