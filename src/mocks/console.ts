@@ -1,139 +1,18 @@
 import { ConsoleApiError } from '@/api/console';
-import { findGitbookSource, isMarkdownFileName, normalizeSourceUrl } from '@/lib/console';
+import { isMarkdownFileName, normalizeSourceUrl } from '@/lib/console';
 import type {
   ConsoleErrorResponse,
-  DocumentGroupDetail,
   DocumentUploadRequest,
   DocumentUploadResult,
   GitbookSyncResult,
   ReindexResult,
 } from '@/types/console.types';
 
-export const documentGroupDetails: DocumentGroupDetail[] = [
-  {
-    group: {
-      groupId: 1,
-      groupKey: 'HELP_CHATBOT',
-      name: '도움말 챗봇 이용가이드',
-      consumerKey: 'HELP_CHATBOT',
-    },
-    sources: [
-      {
-        groupSourceId: 1,
-        provider: 'GITBOOK',
-        rootUrl: 'https://docs.riido.io',
-        enabled: true,
-        documentCount: 1,
-      },
-    ],
-    summary: {
-      activeIndexVersion: { indexVersionId: 57, versionNo: 12 },
-      pendingCount: 2,
-      searchStatus: 'REINDEX_REQUIRED',
-    },
-    documents: [
-      {
-        documentId: 101,
-        documentKey: 'upload/이용가이드',
-        title: '이용가이드',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 4,
-        appliedVersionNo: 3,
-        appliedStatus: 'UNAPPLIED',
-      },
-      {
-        documentId: 102,
-        documentKey: 'upload/자주-묻는-질문',
-        title: '자주 묻는 질문',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 2,
-        appliedVersionNo: 2,
-        appliedStatus: 'APPLIED',
-      },
-      {
-        documentId: 7,
-        documentKey: 'policies/service-policy',
-        title: '서비스 정책 안내',
-        sourceType: 'GITBOOK',
-        groupSourceId: 1,
-        documentVersionNo: 1,
-        appliedVersionNo: 1,
-        appliedStatus: 'APPLIED',
-      },
-      {
-        documentId: 104,
-        documentKey: 'upload/2026-상반기-릴리즈-노트',
-        title: '2026년 상반기 기능 업데이트 및 릴리즈 노트 모음 (v1 개정판, 운영팀 검수 완료본)',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 4,
-        appliedVersionNo: 3,
-        appliedStatus: 'UNAPPLIED',
-      },
-    ],
-    jobInProgress: false,
-  },
-  {
-    group: {
-      groupId: 2,
-      groupKey: 'POLICY_CHATBOT',
-      name: '서비스 정책 안내',
-      consumerKey: 'POLICY_CHATBOT',
-    },
-    sources: [],
-    summary: {
-      activeIndexVersion: { indexVersionId: 41, versionNo: 8 },
-      pendingCount: 0,
-      searchStatus: 'UP_TO_DATE',
-    },
-    documents: [
-      {
-        documentId: 201,
-        documentKey: 'upload/이용약관',
-        title: '이용약관',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 3,
-        appliedVersionNo: 3,
-        appliedStatus: 'APPLIED',
-      },
-      {
-        documentId: 202,
-        documentKey: 'upload/개인정보-처리방침',
-        title: '개인정보 처리방침',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 2,
-        appliedVersionNo: 2,
-        appliedStatus: 'APPLIED',
-      },
-      {
-        documentId: 203,
-        documentKey: 'upload/환불-및-취소-정책',
-        title: '환불 및 취소 정책',
-        sourceType: 'UPLOAD',
-        groupSourceId: null,
-        documentVersionNo: 1,
-        appliedVersionNo: 1,
-        appliedStatus: 'APPLIED',
-      },
-    ],
-    jobInProgress: false,
-  },
-];
-
-// 주소 표시줄에서 받은 값은 문자열이므로 숫자로 바꾸어 문서 그룹을 찾는다.
-export const findDocumentGroupDetail = (groupId: string | undefined) => {
-  const parsedGroupId = Number(groupId);
-
-  if (groupId === undefined || !Number.isInteger(parsedGroupId)) {
-    return null;
-  }
-
-  return documentGroupDetails.find((detail) => detail.group.groupId === parsedGroupId) ?? null;
-};
+/**
+ * 목록 조회와 상세 조회는 실제 API 를 쓰므로 여기에는 실행 엔드포인트 목만 남아 있다.
+ * 상세 목 데이터가 없어져 그룹이나 문서를 찾아 판정하던 거절은 재현하지 않고, 요청만 보고 판정할 수 있는 거절만 남긴다.
+ * 실행이 끝나도 실제 서버는 바뀌지 않으므로, 실행 뒤 재조회로 갱신되는 배경 상세는 그대로다.
+ */
 
 // 파일 조건은 두 엔드포인트가 같다. 초과분은 접수 전 거절이므로 실행도 원본도 만들어지지 않는다.
 const MAX_UPLOAD_FILE_SIZE = 5 * 1024 * 1024;
@@ -152,7 +31,7 @@ function throwRejection(body: ConsoleErrorResponse): never {
 }
 
 /**
- * 문서명을 정규화해 문서 키를 만든다. 서버가 맡는 규칙이므로 목이 같은 이름 재업로드를 판정할 때에만 쓴다.
+ * 문서명을 정규화해 문서 키를 만든다. 서버가 맡는 규칙이므로 목이 쓸 수 있는 문자가 남는지 판정할 때에만 쓴다.
  * 한글은 완성형만 남기고, 명세에 적힌 순서대로 공백을 하이픈으로 바꾼 뒤 허용 문자를 거른다.
  */
 const normalizeDocumentTitle = (title: string) =>
@@ -207,21 +86,15 @@ const buildUploadResult = (documentId: number, versionNo: number): DocumentUploa
 });
 
 /**
- * 신규 문서 업로드 목. 확정된 판정 가운데 목 데이터로 재현할 수 있는 것만 다룬다.
- * 본문 해시를 계산하지 않기 때문에 DUPLICATE_CONTENT 는 재현하지 않는다.
+ * 신규 문서 업로드 목. 요청만 보고 판정할 수 있는 파일 조건과 문서명 조건만 다룬다.
+ * 같은 이름 판정(DOCUMENT_ALREADY_EXISTS)과 본문 해시 판정(DUPLICATE_CONTENT)은 서버 데이터가 필요해 재현하지 않는다.
  */
 async function uploadNewDocumentMock(
-  groupId: number,
+  _groupId: number,
   file: File,
   title: string,
 ): Promise<DocumentUploadResult> {
   await delay(MOCK_UPLOAD_DELAY_MS);
-
-  const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
-
-  if (detail === undefined) {
-    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서 그룹입니다.' });
-  }
 
   const fileRejection = findFileRejection(file);
 
@@ -229,26 +102,10 @@ async function uploadNewDocumentMock(
     throwRejection(fileRejection);
   }
 
-  const normalizedTitle = normalizeDocumentTitle(title);
-
-  if (normalizedTitle === '') {
+  if (normalizeDocumentTitle(title) === '') {
     throwRejection({
       code: 'INVALID_FILE',
       message: '문서명에 사용할 수 있는 문자가 없습니다.',
-    });
-  }
-
-  // 같은 키의 콘솔 문서에 준비된 판이 있으면 새 판은 수정본 업로드로만 만들 수 있다.
-  const isTitleTaken = detail.documents.some(
-    (document) =>
-      document.sourceType === 'UPLOAD' && document.documentKey === `upload/${normalizedTitle}`,
-  );
-
-  if (isTitleTaken) {
-    throwRejection({
-      code: 'DOCUMENT_ALREADY_EXISTS',
-      message:
-        '같은 이름의 문서가 이미 있습니다. 수정본 업로드를 사용하거나 다른 이름을 입력해 주세요.',
     });
   }
 
@@ -257,8 +114,8 @@ async function uploadNewDocumentMock(
 }
 
 /**
- * 수정본 업로드 목. 대상은 sourceType 이 UPLOAD 이고 준비된 판이 있는 문서뿐이다.
- * 직전 판과의 본문 해시 비교가 필요한 NO_CHANGE 는 목 데이터로 재현하지 않는다.
+ * 수정본 업로드 목. 파일 조건만 판정한다.
+ * 대상 문서를 찾아야 하는 NOT_FOUND 와 DOCUMENT_NOT_REVISABLE, 직전 판과 비교해야 하는 NO_CHANGE 는 재현하지 않는다.
  */
 async function uploadDocumentRevisionMock(
   documentId: number,
@@ -266,28 +123,14 @@ async function uploadDocumentRevisionMock(
 ): Promise<DocumentUploadResult> {
   await delay(MOCK_UPLOAD_DELAY_MS);
 
-  const target = documentGroupDetails
-    .flatMap((detail) => detail.documents)
-    .find((document) => document.documentId === documentId);
-
-  if (target === undefined) {
-    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서입니다.' });
-  }
-
-  if (target.sourceType === 'GITBOOK') {
-    throwRejection({
-      code: 'DOCUMENT_NOT_REVISABLE',
-      message: 'GitBook 문서에는 수정본을 올릴 수 없습니다.',
-    });
-  }
-
   const fileRejection = findFileRejection(file);
 
   if (fileRejection !== null) {
     throwRejection(fileRejection);
   }
 
-  return buildUploadResult(target.documentId, target.documentVersionNo + 1);
+  // 직전 판 번호를 알 수 없으므로, 수정본이 만드는 가장 이른 판 번호로 돌려준다.
+  return buildUploadResult(documentId, 2);
 }
 
 /**
@@ -303,28 +146,25 @@ export function uploadDocumentMock(request: DocumentUploadRequest) {
 // 조합 확정과 임베딩 확인과 코퍼스 교체까지 마친 뒤 응답하므로, 업로드보다 긴 지연으로 잠금 모달을 재현한다.
 const MOCK_REINDEX_DELAY_MS = 2500;
 
+// 목이 이어 가는 검색 버전 번호. 실제 상세의 검색 버전과는 무관하며 호출마다 하나씩 늘어난다.
+let mockActiveVersionNo = 12;
+
 /**
  * 검색 반영 API 목. 명세의 오류는 처리 중 실패 하나뿐이고 목에서는 재현할 원인이 없으므로 항상 성공한다.
- * 상세 조회 API 가 없어 목 데이터는 바꾸지 않으며, 배경 상세 갱신은 상세 조회를 붙일 때 재조회로 맡긴다.
+ * 상세 목 데이터가 없어 직전 ACTIVE 는 목이 이어 가는 번호로 채운다.
  */
 export async function reindexDocumentGroupMock(groupId: number): Promise<ReindexResult> {
+  // 실제 API 와 같은 형태를 유지할 뿐, 상세 목 데이터가 없어 그룹으로 판정하는 일은 없다.
+  void groupId;
+
   await delay(MOCK_REINDEX_DELAY_MS);
 
-  const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
-
-  // 상세 화면이 없는 그룹에서는 버튼에 닿을 수 없으므로, 명세에 있는 유일한 오류로 처리 중 실패를 흉내 낸다.
-  if (detail === undefined) {
-    throwRejection({ code: 'INTERNAL_ERROR', message: '다시 시도해 주세요.' });
-  }
-
-  const previousIndexVersion = detail.summary.activeIndexVersion;
+  const previousIndexVersion = { indexVersionId: nextMockId(), versionNo: mockActiveVersionNo };
+  mockActiveVersionNo += 1;
 
   return {
     indexRunId: nextMockId(),
-    indexVersion: {
-      indexVersionId: nextMockId(),
-      versionNo: (previousIndexVersion?.versionNo ?? 0) + 1,
-    },
+    indexVersion: { indexVersionId: nextMockId(), versionNo: mockActiveVersionNo },
     previousIndexVersion,
   };
 }
@@ -339,12 +179,12 @@ const MOCK_GITBOOK_ROOT_URL = 'https://docs.riido.io';
 const MOCK_GITBOOK_PAGE_COUNT = 41;
 
 /**
- * GitBook 수집 API 목. 거절 검사 순서는 명세대로 요청 검증, 그룹 조회, 진행 중 작업 검사, 목록 조회다.
- * 진행 중 작업이 있으면 목록을 읽지 않으므로 409 가 502 보다 먼저 나온다.
- * 상세 조회 API 가 없어 목 데이터는 바꾸지 않으며, 배경 상세 갱신은 상세 조회를 붙일 때 재조회로 맡긴다.
+ * GitBook 수집 API 목. 요청만 보고 판정할 수 있는 요청 검증(422)과 목록 조회(502)만 재현한다.
+ * 그룹 조회(404)와 진행 중 작업 검사(409)는 상세 목 데이터가 없어 재현하지 않는다.
+ * 결과는 명세의 응답 예시 그대로 같은 루트로 다시 부른 재수집이며, 페이지 하나가 실패해도 배치는 계속 진행해 200 으로 집계한다.
  */
 export async function syncGitbookMock(
-  groupId: number,
+  _groupId: number,
   sourceUrl: string,
 ): Promise<GitbookSyncResult> {
   await delay(MOCK_GITBOOK_SYNC_DELAY_MS);
@@ -355,19 +195,6 @@ export async function syncGitbookMock(
     throwRejection({ code: 'INVALID_REQUEST', message: 'https 주소만 입력할 수 있습니다.' });
   }
 
-  const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
-
-  if (detail === undefined) {
-    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서 그룹입니다.' });
-  }
-
-  if (detail.jobInProgress) {
-    throwRejection({
-      code: 'JOB_IN_PROGRESS',
-      message: '다른 작업이 진행 중입니다. 완료 후 다시 실행할 수 있습니다.',
-    });
-  }
-
   if (rootUrl !== MOCK_GITBOOK_ROOT_URL) {
     throwRejection({
       code: 'SOURCE_LIST_FAILED',
@@ -375,28 +202,8 @@ export async function syncGitbookMock(
     });
   }
 
-  const existingSource = findGitbookSource(detail);
-
-  // 원천이 아직 없는 그룹은 첫 수집이라 모든 페이지가 신규이고, 사라진 페이지와 실패는 없다.
-  if (existingSource === null) {
-    return {
-      groupSourceId: nextMockId(),
-      rootUrl,
-      counts: {
-        total: MOCK_GITBOOK_PAGE_COUNT,
-        created: MOCK_GITBOOK_PAGE_COUNT,
-        updated: 0,
-        noChange: 0,
-        removed: 0,
-        failed: 0,
-      },
-      failures: [],
-    };
-  }
-
-  // 같은 루트로 다시 부른 재수집. 명세의 응답 예시 그대로 페이지 하나가 실패해도 배치는 계속 진행해 200 으로 집계한다.
   return {
-    groupSourceId: existingSource.groupSourceId,
+    groupSourceId: 1,
     rootUrl,
     counts: {
       total: MOCK_GITBOOK_PAGE_COUNT,

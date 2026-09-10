@@ -1,5 +1,6 @@
 import type {
   ConsoleErrorResponse,
+  DocumentGroupDetail,
   DocumentGroupListResponse,
   DocumentUploadRequest,
   DocumentUploadResult,
@@ -106,6 +107,15 @@ export async function fetchDocumentGroups(signal?: AbortSignal) {
   );
 
   return groups;
+}
+
+/**
+ * 문서 그룹 상세 조회. 요약, 수집 원천 목록, 문서 표를 한 번에 돌려주고 상태는 저장하지 않고 계산한다.
+ * 문서 표에는 enabled 이고 READY 판이 있는 문서만 들어가며, 없는 그룹이면 404 NOT_FOUND 다.
+ * 실행이 끝난 뒤 배경 상세를 갱신하는 재조회도 같은 호출이다.
+ */
+export function fetchDocumentGroupDetail(groupId: number, signal?: AbortSignal) {
+  return getConsole<DocumentGroupDetail>(`/api/admin/document-groups/${groupId}`, signal);
 }
 
 /**

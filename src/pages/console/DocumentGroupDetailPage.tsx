@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 
-import { toConsoleApiError } from '@/api/console';
+import { fetchDocumentGroupDetail, toConsoleApiError } from '@/api/console';
 import { Button } from '@/components/common/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/tooltip';
 import ConsolePage from '@/components/console/ConsolePage';
@@ -20,13 +20,9 @@ import {
   isJobRunning,
   resolveUploadErrorSurface,
 } from '@/lib/console';
-import {
-  findDocumentGroupDetail,
-  reindexDocumentGroupMock,
-  syncGitbookMock,
-  uploadDocumentMock,
-} from '@/mocks/console';
+import { reindexDocumentGroupMock, syncGitbookMock, uploadDocumentMock } from '@/mocks/console';
 import type {
+  DocumentGroupDetail,
   DocumentUploadRequest,
   DocumentUploadTarget,
   GitbookSyncOutcome,
@@ -35,8 +31,144 @@ import type {
   UploadOutcome,
 } from '@/types/console.types';
 
+const LIST_PATH = '/console/document-groups';
+const LOADING_MESSAGE = '문서 그룹을 불러오고 있습니다.';
+
+/**
+ * 상세 조회의 진행 상태. 그룹이 없는 경우는 다른 실패와 달리 화면 전체 오류로 바꾸므로 따로 둔다.
+ * 재조회는 ready 를 유지한 채 이루어지고, 재조회에 실패해도 실행은 이미 끝났으므로 보고 있던 상세를 그대로 둔다.
+ */
+type DocumentGroupDetailState =
+  | { status: 'loading' }
+  | { status: 'ready'; detail: DocumentGroupDetail }
+  | { status: 'missing' }
+  | { status: 'failed'; message: string };
+
+// 주소 표시줄에서 받은 값은 문자열이므로 정수로 바꾸고, 정수가 아니면 없는 그룹으로 본다.
+const parseGroupId = (groupId: string | undefined) => {
+  const parsed = Number(groupId);
+
+  return groupId !== undefined && Number.isInteger(parsed) ? parsed : null;
+};
+
+/** 없는 그룹과 사라진 그룹이 함께 쓰는 화면 전체 오류 */
+function MissingGroupPage() {
+  return (
+    <ConsolePage breadcrumb={[{ label: '문서 관리' }]}>
+      <ConsolePageHeader
+        title="문서 그룹을 찾을 수 없습니다"
+        description="주소가 바뀌었거나 삭제된 문서 그룹입니다"
+      />
+      <Link to={LIST_PATH} className="text-label text-label-alternative underline">
+        문서 그룹 목록으로 돌아가기
+      </Link>
+    </ConsolePage>
+  );
+}
+
 export default function DocumentGroupDetailPage() {
   const { groupId } = useParams();
+  const parsedGroupId = parseGroupId(groupId);
+
+  if (parsedGroupId === null) {
+    return <MissingGroupPage />;
+  }
+
+  // 그룹이 바뀌면 조회 상태와 열려 있던 모달을 모두 새로 시작하도록 그룹마다 다른 트리를 만든다.
+  return <DocumentGroupDetailLoader key={parsedGroupId} groupId={parsedGroupId} />;
+}
+
+/** 상세를 조회해 화면 상태를 정하고, 실행이 끝난 뒤의 재조회를 맡는다. */
+function DocumentGroupDetailLoader({ groupId }: { groupId: number }) {
+  const [state, setState] = useState<DocumentGroupDetailState>({ status: 'loading' });
+  // 재조회와 다시 시도는 같은 조회를 반복하므로, 값을 올려 effect 를 다시 실행시킨다.
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetchDocumentGroupDetail(groupId, controller.signal)
+      .then((detail) => setState({ status: 'ready', detail }))
+      .catch((error: unknown) => {
+        // 화면을 떠나거나 재조회가 겹쳐 중단한 요청은 실패가 아니므로 상태를 바꾸지 않는다.
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        const failure = toConsoleApiError(error);
+
+        if (failure.code === 'NOT_FOUND') {
+          setState({ status: 'missing' });
+          return;
+        }
+
+        // 재조회 실패는 보고 있던 상세를 그대로 두고, 첫 조회 실패만 오류 화면으로 바꾼다.
+        setState((previous) =>
+          previous.status === 'ready' ? previous : { status: 'failed', message: failure.message },
+        );
+      });
+
+    return () => controller.abort();
+  }, [groupId, attempt]);
+
+  // 재조회는 화면을 조회 중으로 바꾸지 않고 응답이 오면 상세만 갈아 끼운다.
+  const refetch = () => setAttempt((count) => count + 1);
+
+  const retry = () => {
+    setState({ status: 'loading' });
+    refetch();
+  };
+
+  if (state.status === 'missing') {
+    return <MissingGroupPage />;
+  }
+
+  if (state.status === 'loading') {
+    return (
+      <ConsolePage breadcrumb={[{ label: '문서 관리', to: LIST_PATH }]}>
+        <p className="text-label text-label-alternative animate-pulse" aria-live="polite">
+          {LOADING_MESSAGE}
+        </p>
+      </ConsolePage>
+    );
+  }
+
+  if (state.status === 'failed') {
+    return (
+      <ConsolePage breadcrumb={[{ label: '문서 관리', to: LIST_PATH }]}>
+        <div className="flex flex-col items-start gap-3" role="alert">
+          <p className="text-label text-label-normal">{state.message}</p>
+          <Button variant="console-secondary" size="md" onClick={retry}>
+            다시 시도
+          </Button>
+        </div>
+      </ConsolePage>
+    );
+  }
+
+  return (
+    <DocumentGroupDetailView
+      detail={state.detail}
+      onRefetch={refetch}
+      onGroupMissing={() => setState({ status: 'missing' })}
+    />
+  );
+}
+
+type DocumentGroupDetailViewProps = {
+  detail: DocumentGroupDetail;
+  /** 실행이 끝나 배경 상세가 바뀌었을 때의 재조회 */
+  onRefetch: () => void;
+  /** 그룹이 사라진 뒤 도달한 실행은 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다. */
+  onGroupMissing: () => void;
+};
+
+/** 조회가 끝난 상세 화면. 업로드, 검색 반영, GitBook 수집 모달을 이 안에서 연다. */
+function DocumentGroupDetailView({
+  detail,
+  onRefetch,
+  onGroupMissing,
+}: DocumentGroupDetailViewProps) {
   const [uploadTarget, setUploadTarget] = useState<DocumentUploadTarget | null>(null);
   // 다시 업로드는 실패한 원래 모달로 돌아가야 하므로 직전 대상을 남겨 둔다.
   const [failedTarget, setFailedTarget] = useState<DocumentUploadTarget | null>(null);
@@ -46,23 +178,6 @@ export default function DocumentGroupDetailPage() {
   // GitBook 수집은 수집 모달이 수집 중까지 맡고, 응답이 오면 결과 모달로 바꿔 보인다. null 이면 각각 닫힌 상태다.
   const [syncTarget, setSyncTarget] = useState<GitbookSyncTarget | null>(null);
   const [syncOutcome, setSyncOutcome] = useState<GitbookSyncOutcome | null>(null);
-  // 그룹이 사라진 뒤 도달한 업로드는 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다.
-  const [isGroupMissing, setIsGroupMissing] = useState(false);
-  const detail = findDocumentGroupDetail(groupId);
-
-  if (detail === null || isGroupMissing) {
-    return (
-      <ConsolePage breadcrumb={[{ label: '문서 관리' }]}>
-        <ConsolePageHeader
-          title="문서 그룹을 찾을 수 없습니다"
-          description="주소가 바뀌었거나 삭제된 문서 그룹입니다"
-        />
-        <Link to="/console/document-groups" className="text-label text-label-alternative underline">
-          문서 그룹 목록으로 돌아가기
-        </Link>
-      </ConsolePage>
-    );
-  }
 
   const { group, summary, documents } = detail;
   // 실행 중인 작업이 있으면 실행 버튼을 모두 비활성으로 두고, 비활성 사유는 화면에 나타내지 않는다.
@@ -96,10 +211,11 @@ export default function DocumentGroupDetailPage() {
 
     switch (resolveUploadErrorSurface(failure.code)) {
       case 'page':
-        setIsGroupMissing(true);
+        onGroupMissing();
         break;
       case 'refetch':
-        // 화면이 낡아서 도달한 경우다. 모달을 두지 않고, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+        // 화면이 낡아서 도달한 경우다. 모달을 두지 않고 상세를 다시 조회해 버튼 활성을 맞춘다.
+        onRefetch();
         break;
       default:
         setFailedTarget(target);
@@ -116,8 +232,8 @@ export default function DocumentGroupDetailPage() {
 
     try {
       const result = await reindexDocumentGroupMock(group.groupId);
-      // 성공하면 새 검색 버전이 ACTIVE 가 되고 반영 대기가 없어진다.
-      // 확인을 누르기 전에 배경 상세가 갱신되어 있어야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      // 성공하면 새 검색 버전이 ACTIVE 가 되고 반영 대기가 없어진다. 확인을 누르기 전에 배경 상세가 갱신되어 있어야 한다.
+      onRefetch();
       setReindexStep({ status: 'done', result });
     } catch (error) {
       // 실패 모달은 한 종류이고 본문은 응답의 message 그대로다. 기존 ACTIVE 색인과 검색 코퍼스는 그대로 남는다.
@@ -139,7 +255,7 @@ export default function DocumentGroupDetailPage() {
    * 404 와 409 는 헤더 버튼이 비활성인 정상 흐름에서 도달할 수 없으므로 따로 다루지 않는다.
    */
   const handleGitbookSync = async (sourceUrl: string) => {
-    // 라우트가 바뀌어도 열린 모달이 가리키는 그룹에 수집해야 하므로, 현재 상세의 groupId 대신 열 당시 대상을 쓴다.
+    // 열린 모달이 가리키는 그룹에 수집해야 하므로, 현재 상세의 groupId 대신 열 당시 대상을 쓴다.
     const target = syncTarget;
 
     if (target === null) {
@@ -149,7 +265,8 @@ export default function DocumentGroupDetailPage() {
     try {
       const result = await syncGitbookMock(target.groupId, sourceUrl);
       // 수집이 끝나면 반영 대기가 늘고 문서 표가 바뀌지만, 검색에는 반영되지 않아 검색 반영 상태 뱃지는 그대로다.
-      // 결과 모달 뒤의 배경 상세가 갱신되어 있어야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      // 결과 모달 뒤의 배경 상세가 갱신되어 있어야 하므로 여기서 다시 조회한다.
+      onRefetch();
       setSyncOutcome({ status: 'done', result });
     } catch (error) {
       setSyncOutcome({ status: 'failed', message: toConsoleApiError(error).message });
@@ -165,7 +282,8 @@ export default function DocumentGroupDetailPage() {
     try {
       const result = await uploadDocumentMock(request);
       // 성공하면 새 판이 잡히고 반영 대기가 하나 늘며 검색 반영 상태가 반영 필요로 바뀐다.
-      // 배경 상세는 갱신된 상태로 보여야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      // 배경 상세는 갱신된 상태로 보여야 하므로 여기서 다시 조회한다.
+      onRefetch();
       setUploadOutcome({ status: 'ready', result });
     } catch (error) {
       if (target !== null) {
@@ -177,9 +295,7 @@ export default function DocumentGroupDetailPage() {
   };
 
   return (
-    <ConsolePage
-      breadcrumb={[{ label: '문서 관리', to: '/console/document-groups' }, { label: group.name }]}
-    >
+    <ConsolePage breadcrumb={[{ label: '문서 관리', to: LIST_PATH }, { label: group.name }]}>
       <ConsolePageHeader
         title={group.name}
         description={formatGroupDescription(group.consumerKey)}
@@ -254,9 +370,9 @@ export default function DocumentGroupDetailPage() {
       <ReindexDialog
         step={reindexStep}
         onClose={() => {
-          // 완료의 확인과 실패의 닫기 모두 모달만 닫는다.
-          // 닫힐 때 상세 재조회 1회를 안전망으로 두기로 했으므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+          // 완료의 확인과 실패의 닫기 모두 모달만 닫고, 닫힐 때 상세 재조회 1회를 안전망으로 둔다.
           setReindexStep(null);
+          onRefetch();
         }}
         onStart={() => void handleReindex()}
       />
@@ -268,8 +384,9 @@ export default function DocumentGroupDetailPage() {
       <GitbookSyncResultDialog
         outcome={syncOutcome}
         onClose={() => {
-          // 닫기는 모달만 닫는다. 반영 대기가 갱신된 상세가 보여야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+          // 닫기는 모달만 닫고, 반영 대기가 갱신된 상세가 보이도록 재조회 1회를 안전망으로 둔다.
           setSyncOutcome(null);
+          onRefetch();
         }}
         onReindex={() => {
           // 결과 모달을 닫고 검색 반영 확인 모달로 넘어간다.
