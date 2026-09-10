@@ -3,7 +3,6 @@ import { findGitbookSource, isMarkdownFileName, normalizeSourceUrl } from '@/lib
 import type {
   ConsoleErrorResponse,
   DocumentGroupDetail,
-  DocumentGroupSummary,
   DocumentUploadRequest,
   DocumentUploadResult,
   GitbookSyncResult,
@@ -124,17 +123,6 @@ export const documentGroupDetails: DocumentGroupDetail[] = [
     jobInProgress: false,
   },
 ];
-
-/**
- * 목록 조회는 별도의 API이지만, 목 데이터끼리 어긋나지 않도록 상세 목 데이터에서 만들어 낸다.
- * 상세의 문서 표에는 목록의 문서 수와 같은 기준으로 걸러진 문서만 들어 있다.
- */
-export const documentGroups: DocumentGroupSummary[] = documentGroupDetails.map((detail) => ({
-  ...detail.group,
-  documentCount: detail.documents.length,
-  activeIndexVersionNo: detail.summary.activeIndexVersion?.versionNo ?? null,
-  searchStatus: detail.summary.searchStatus,
-}));
 
 // 주소 표시줄에서 받은 값은 문자열이므로 숫자로 바꾸어 문서 그룹을 찾는다.
 export const findDocumentGroupDetail = (groupId: string | undefined) => {

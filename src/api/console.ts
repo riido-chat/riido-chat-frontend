@@ -1,5 +1,6 @@
 import type {
   ConsoleErrorResponse,
+  DocumentGroupListResponse,
   DocumentUploadRequest,
   DocumentUploadResult,
   GitbookSyncResult,
@@ -49,11 +50,36 @@ export class ConsoleApiError extends Error {
 export const toConsoleApiError = (error: unknown) =>
   error instanceof ConsoleApiError ? error : new ConsoleApiError(FALLBACK_ERROR);
 
+/**
+ * 콘솔 엔드포인트가 오류 형태를 공유하므로 응답 판정과 오류 변환을 한곳에 모은다.
+ * 성공 본문은 그대로 돌려주고, 실패 본문은 code 와 message 를 갖춘 경우에만 그대로 쓴다.
+ */
+async function readConsoleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
+    // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하거나, 게이트웨이가 형태가 다른 JSON 을 내려주는 경우가 여기에 해당한다.
+    const errorBody = toErrorResponse(await response.json().catch(() => null));
+    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
+  }
+
+  return response.json();
+}
+
+/**
+ * 콘솔의 조회 엔드포인트. 화면을 떠나면 응답을 버릴 수 있도록 signal 을 받는다.
+ * 중단된 요청은 fetch 가 AbortError 로 거절하므로, 호출한 쪽이 그 경우만 걸러 내면 된다.
+ */
+async function getConsole<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, { method: 'GET', signal });
+
+  return readConsoleResponse<T>(response);
+}
+
 // 업로드는 multipart 로, GitBook 수집은 JSON 으로 보내고, 검색 반영은 본문이 없다.
 type ConsoleRequestBody = FormData | Record<string, unknown>;
 
 /**
- * 콘솔의 실행 엔드포인트가 오류 형태를 공유하므로 전송과 오류 변환을 한곳에 모은다.
+ * 콘솔의 실행 엔드포인트.
  * 업로드는 임베딩까지, 검색 반영은 ACTIVE 전환까지, GitBook 수집은 페이지별 처리까지 끝낸 뒤에 응답이 오는 동기 실행이라
  * 진행률을 받을 자리가 없다.
  */
@@ -66,14 +92,20 @@ async function postConsole<T>(path: string, body?: ConsoleRequestBody): Promise<
     body: isJsonBody ? JSON.stringify(body) : body,
   });
 
-  if (!response.ok) {
-    // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
-    // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하거나, 게이트웨이가 형태가 다른 JSON 을 내려주는 경우가 여기에 해당한다.
-    const errorBody = toErrorResponse(await response.json().catch(() => null));
-    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
-  }
+  return readConsoleResponse<T>(response);
+}
 
-  return response.json();
+/**
+ * 문서 그룹 목록 조회. 그룹마다 문서 수, 검색 버전, 검색 반영 상태를 서버가 계산해서 내려준다.
+ * 문서 수는 enabled 이고 READY 판이 있는 문서만 센 값이므로 화면에서 다시 세지 않는다. 그룹이 없으면 빈 배열이다.
+ */
+export async function fetchDocumentGroups(signal?: AbortSignal) {
+  const { groups } = await getConsole<DocumentGroupListResponse>(
+    '/api/admin/document-groups',
+    signal,
+  );
+
+  return groups;
 }
 
 /**

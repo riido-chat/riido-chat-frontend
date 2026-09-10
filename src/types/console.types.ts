@@ -30,6 +30,11 @@ export type DocumentGroupSummary = DocumentGroup & {
   searchStatus: SearchStatus;
 };
 
+// 목록 조회 응답. 그룹이 없으면 빈 배열로 200 이 온다.
+export type DocumentGroupListResponse = {
+  groups: DocumentGroupSummary[];
+};
+
 // 그룹이 문서를 끌어오는 수집 원천. 콘솔에서 직접 올린 문서는 원천이 없으므로 여기에 포함되지 않는다.
 export type GroupSource = {
   groupSourceId: number;
