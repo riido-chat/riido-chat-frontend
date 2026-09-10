@@ -139,8 +139,15 @@ export default function DocumentGroupDetailPage() {
    * 404 와 409 는 헤더 버튼이 비활성인 정상 흐름에서 도달할 수 없으므로 따로 다루지 않는다.
    */
   const handleGitbookSync = async (sourceUrl: string) => {
+    // 라우트가 바뀌어도 열린 모달이 가리키는 그룹에 수집해야 하므로, 현재 상세의 groupId 대신 열 당시 대상을 쓴다.
+    const target = syncTarget;
+
+    if (target === null) {
+      return;
+    }
+
     try {
-      const result = await syncGitbookMock(group.groupId, sourceUrl);
+      const result = await syncGitbookMock(target.groupId, sourceUrl);
       // 수집이 끝나면 반영 대기가 늘고 문서 표가 바뀌지만, 검색에는 반영되지 않아 검색 반영 상태 뱃지는 그대로다.
       // 결과 모달 뒤의 배경 상세가 갱신되어 있어야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
       setSyncOutcome({ status: 'done', result });
