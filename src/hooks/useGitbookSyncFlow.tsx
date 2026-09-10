@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
-import { toConsoleApiError } from '@/api/console';
+import { syncGitbook, toConsoleApiError } from '@/api/console';
 import GitbookSyncDialog from '@/components/console/GitbookSyncDialog';
 import GitbookSyncResultDialog from '@/components/console/GitbookSyncResultDialog';
-import { syncGitbookMock } from '@/mocks/console';
 import type { GitbookSyncOutcome, GitbookSyncTarget } from '@/types/console.types';
 
 type GitbookSyncFlowParams = {
@@ -46,7 +45,7 @@ export function useGitbookSyncFlow({
     }
 
     try {
-      const result = await syncGitbookMock(syncingTarget.groupId, sourceUrl);
+      const result = await syncGitbook(syncingTarget.groupId, sourceUrl);
       // 수집이 끝나면 반영 대기가 늘고 문서 표가 바뀌지만, 검색에는 반영되지 않아 검색 반영 상태 뱃지는 그대로다.
       onRefetch();
       setOutcome({ status: 'done', result });
