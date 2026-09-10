@@ -1,11 +1,12 @@
 import { ConsoleApiError } from '@/api/console';
-import { isMarkdownFileName } from '@/lib/console';
+import { findGitbookSource, isMarkdownFileName, normalizeSourceUrl } from '@/lib/console';
 import type {
   ConsoleErrorResponse,
   DocumentGroupDetail,
   DocumentGroupSummary,
   DocumentUploadRequest,
   DocumentUploadResult,
+  GitbookSyncResult,
   ReindexResult,
 } from '@/types/console.types';
 
@@ -337,5 +338,93 @@ export async function reindexDocumentGroupMock(groupId: number): Promise<Reindex
       versionNo: (previousIndexVersion?.versionNo ?? 0) + 1,
     },
     previousIndexVersion,
+  };
+}
+
+// 페이지 목록 조회와 페이지별 처리를 모두 요청 안에서 끝내므로, 운영 실측 (40 페이지 5.2초) 에 가까운 지연으로 수집 중 모달을 재현한다.
+const MOCK_GITBOOK_SYNC_DELAY_MS = 3000;
+
+// 목이 아는 GitBook 은 발표 데이터의 원천 하나뿐이다. 다른 루트는 llms.txt 를 읽지 못한 것으로 본다.
+const MOCK_GITBOOK_ROOT_URL = 'https://docs.riido.io';
+
+// 목이 읽어 오는 페이지 수. 명세의 응답 예시와 같은 값이다.
+const MOCK_GITBOOK_PAGE_COUNT = 41;
+
+/**
+ * GitBook 수집 API 목. 거절 검사 순서는 명세대로 요청 검증, 그룹 조회, 진행 중 작업 검사, 목록 조회다.
+ * 진행 중 작업이 있으면 목록을 읽지 않으므로 409 가 502 보다 먼저 나온다.
+ * 상세 조회 API 가 없어 목 데이터는 바꾸지 않으며, 배경 상세 갱신은 상세 조회를 붙일 때 재조회로 맡긴다.
+ */
+export async function syncGitbookMock(
+  groupId: number,
+  sourceUrl: string,
+): Promise<GitbookSyncResult> {
+  await delay(MOCK_GITBOOK_SYNC_DELAY_MS);
+
+  const rootUrl = normalizeSourceUrl(sourceUrl);
+
+  if (!rootUrl.startsWith('https://')) {
+    throwRejection({ code: 'INVALID_REQUEST', message: 'https 주소만 입력할 수 있습니다.' });
+  }
+
+  const detail = documentGroupDetails.find((it) => it.group.groupId === groupId);
+
+  if (detail === undefined) {
+    throwRejection({ code: 'NOT_FOUND', message: '존재하지 않는 문서 그룹입니다.' });
+  }
+
+  if (detail.jobInProgress) {
+    throwRejection({
+      code: 'JOB_IN_PROGRESS',
+      message: '다른 작업이 진행 중입니다. 완료 후 다시 실행할 수 있습니다.',
+    });
+  }
+
+  if (rootUrl !== MOCK_GITBOOK_ROOT_URL) {
+    throwRejection({
+      code: 'SOURCE_LIST_FAILED',
+      message: 'GitBook 페이지 목록을 읽지 못했습니다. 다시 시도하거나 GitBook 을 확인해 주세요.',
+    });
+  }
+
+  const existingSource = findGitbookSource(detail);
+
+  // 원천이 아직 없는 그룹은 첫 수집이라 모든 페이지가 신규이고, 사라진 페이지와 실패는 없다.
+  if (existingSource === null) {
+    return {
+      groupSourceId: nextMockId(),
+      rootUrl,
+      counts: {
+        total: MOCK_GITBOOK_PAGE_COUNT,
+        created: MOCK_GITBOOK_PAGE_COUNT,
+        updated: 0,
+        noChange: 0,
+        removed: 0,
+        failed: 0,
+      },
+      failures: [],
+    };
+  }
+
+  // 같은 루트로 다시 부른 재수집. 명세의 응답 예시 그대로 페이지 하나가 실패해도 배치는 계속 진행해 200 으로 집계한다.
+  return {
+    groupSourceId: existingSource.groupSourceId,
+    rootUrl,
+    counts: {
+      total: MOCK_GITBOOK_PAGE_COUNT,
+      created: 1,
+      updated: 3,
+      noChange: 36,
+      removed: 1,
+      failed: 1,
+    },
+    failures: [
+      {
+        documentKey: 'sprints/automations',
+        title: '스프린트 자동화',
+        ingestionRunId: nextMockId(),
+        message: '문서 내용을 처리할 수 없습니다.',
+      },
+    ],
   };
 }
