@@ -8,23 +8,30 @@ import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import DocumentTable from '@/components/console/DocumentTable';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
+import GitbookSyncDialog from '@/components/console/GitbookSyncDialog';
+import GitbookSyncResultDialog from '@/components/console/GitbookSyncResultDialog';
 import GroupSummaryCard from '@/components/console/GroupSummaryCard';
 import ReindexDialog from '@/components/console/ReindexDialog';
 import UploadResultDialog from '@/components/console/UploadResultDialog';
 import {
   canReindex,
+  findGitbookSource,
   formatGroupDescription,
   isJobRunning,
+  resolveGitbookSyncErrorSurface,
   resolveUploadErrorSurface,
 } from '@/lib/console';
 import {
   findDocumentGroupDetail,
   reindexDocumentGroupMock,
+  syncGitbookMock,
   uploadDocumentMock,
 } from '@/mocks/console';
 import type {
   DocumentUploadRequest,
   DocumentUploadTarget,
+  GitbookSyncOutcome,
+  GitbookSyncTarget,
   ReindexStep,
   UploadOutcome,
 } from '@/types/console.types';
@@ -37,7 +44,10 @@ export default function DocumentGroupDetailPage() {
   const [uploadOutcome, setUploadOutcome] = useState<UploadOutcome | null>(null);
   // 검색 반영은 확인, 잠금, 완료 또는 실패를 한 모달에서 단계로 보인다. null 이면 닫힌 상태다.
   const [reindexStep, setReindexStep] = useState<ReindexStep | null>(null);
-  // 그룹이 사라진 뒤 도달한 업로드는 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다.
+  // GitBook 수집은 수집 모달이 수집 중까지 맡고, 응답이 오면 결과 모달로 바꿔 보인다. null 이면 각각 닫힌 상태다.
+  const [syncTarget, setSyncTarget] = useState<GitbookSyncTarget | null>(null);
+  const [syncOutcome, setSyncOutcome] = useState<GitbookSyncOutcome | null>(null);
+  // 그룹이 사라진 뒤 도달한 업로드와 수집은 상세 조회 실패와 같으므로 화면 전체 오류로 바꾼다.
   const [isGroupMissing, setIsGroupMissing] = useState(false);
   const detail = findDocumentGroupDetail(groupId);
 
@@ -116,6 +126,42 @@ export default function DocumentGroupDetailPage() {
     }
   };
 
+  /**
+   * GitBook 수집 모달을 연다. 원천이 있으면 저장된 루트 URL 을 읽기 전용으로 보이고, 없으면 입력을 받는다.
+   * 오류 모달의 다시 시도도 입력값을 유지하지 않고 이 대상으로 모달을 처음 상태로 다시 연다.
+   */
+  const openGitbookSync = () => {
+    setSyncTarget({ groupId: group.groupId, rootUrl: findGitbookSource(detail)?.rootUrl ?? null });
+  };
+
+  /**
+   * GitBook 수집 시작. 응답이 올 때까지 수집 모달이 비활성으로 남고, 응답이 오면 결과 모달로 바꿔 보인다.
+   * 오류는 문구를 고르지 않고 code 로 화면만 정한 뒤 서버가 내려준 message 를 그대로 넘긴다.
+   */
+  const handleGitbookSync = async (sourceUrl: string) => {
+    try {
+      const result = await syncGitbookMock(group.groupId, sourceUrl);
+      // 수집이 끝나면 반영 대기가 늘고 문서 표가 바뀌지만, 검색에는 반영되지 않아 검색 반영 상태 뱃지는 그대로다.
+      // 결과 모달 뒤의 배경 상세가 갱신되어 있어야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+      setSyncOutcome({ status: 'done', result });
+    } catch (error) {
+      const failure = toConsoleApiError(error);
+
+      switch (resolveGitbookSyncErrorSurface(failure.code)) {
+        case 'page':
+          setIsGroupMissing(true);
+          break;
+        case 'refetch':
+          // 화면이 낡아서 도달한 경우다. 모달을 두지 않고, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+          break;
+        default:
+          setSyncOutcome({ status: 'failed', message: failure.message });
+      }
+    } finally {
+      setSyncTarget(null);
+    }
+  };
+
   const handleUpload = async (request: DocumentUploadRequest) => {
     // 성공이든 실패든 결과 모달로 넘어가므로, 되돌아갈 대상을 미리 붙들어 둔다.
     const target = uploadTarget;
@@ -144,7 +190,12 @@ export default function DocumentGroupDetailPage() {
         actions={
           <div className="flex items-start gap-2">
             {/* GitBook 수집은 검색 반영 상태와 무관하게 실행 중인 작업이 있을 때에만 비활성이 된다. */}
-            <Button variant="console-secondary" size="md" disabled={isRunning}>
+            <Button
+              variant="console-secondary"
+              size="md"
+              disabled={isRunning}
+              onClick={openGitbookSync}
+            >
               GitBook 수집
             </Button>
             <Button
@@ -212,6 +263,27 @@ export default function DocumentGroupDetailPage() {
           setReindexStep(null);
         }}
         onStart={() => void handleReindex()}
+      />
+      <GitbookSyncDialog
+        target={syncTarget}
+        onClose={() => setSyncTarget(null)}
+        onSync={handleGitbookSync}
+      />
+      <GitbookSyncResultDialog
+        outcome={syncOutcome}
+        onClose={() => {
+          // 닫기는 모달만 닫는다. 반영 대기가 갱신된 상세가 보여야 하므로, 상세 조회를 붙일 때 이 자리에서 다시 조회한다.
+          setSyncOutcome(null);
+        }}
+        onReindex={() => {
+          // 결과 모달을 닫고 검색 반영 확인 모달로 넘어간다.
+          setSyncOutcome(null);
+          setReindexStep({ status: 'confirm' });
+        }}
+        onRetry={() => {
+          setSyncOutcome(null);
+          openGitbookSync();
+        }}
       />
     </ConsolePage>
   );
