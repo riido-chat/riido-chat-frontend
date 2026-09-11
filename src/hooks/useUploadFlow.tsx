@@ -58,7 +58,11 @@ export function useUploadFlow({ onRefetch, onRequestReindex }: UploadFlowParams)
       <DocumentUploadDialog target={target} onClose={() => setTarget(null)} onUpload={upload} />
       <UploadResultDialog
         outcome={outcome}
-        onClose={() => setOutcome(null)}
+        onClose={() => {
+          // 닫기는 모달만 닫고, 새 문서와 반영 대기가 갱신된 상세가 보이도록 재조회 1회를 안전망으로 둔다.
+          setOutcome(null);
+          onRefetch();
+        }}
         onReindex={() => {
           // 반영 대상 버전은 화면에 나열하지 않는다.
           setOutcome(null);
