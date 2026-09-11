@@ -10,7 +10,7 @@ import { SearchStatusBadge } from '@/components/console/StatusBadge';
 import { formatActiveIndexVersion } from '@/lib/console';
 import type { DocumentGroupSummary } from '@/types/console.types';
 
-const getDetailPath = (groupId: number) => `/console/document-groups/${groupId}`;
+const getDetailPath = (groupId: number) => `/document-groups/${groupId}`;
 
 /** 문서 그룹 목록 표. 행은 항상 클릭할 수 있고 문서 그룹 상세로 이동한다. */
 export default function DocumentGroupTable({ groups }: { groups: DocumentGroupSummary[] }) {

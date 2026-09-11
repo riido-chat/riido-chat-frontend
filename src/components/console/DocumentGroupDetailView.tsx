@@ -10,7 +10,7 @@ import { useUploadFlow } from '@/hooks/useUploadFlow';
 import { canReindex, findGitbookSource, formatGroupDescription, isJobRunning } from '@/lib/console';
 import type { DocumentGroupDetail } from '@/types/console.types';
 
-export const DOCUMENT_GROUP_LIST_PATH = '/console/document-groups';
+export const DOCUMENT_GROUP_LIST_PATH = '/document-groups';
 
 type DocumentGroupDetailViewProps = {
   detail: DocumentGroupDetail;
