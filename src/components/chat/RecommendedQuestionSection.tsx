@@ -45,6 +45,7 @@ export default function RecommendedQuestionSection({
               <RecommnededQuestionItemList
                 questions={isExpanded ? tab.questions : tab.questions.slice(0, 3)}
                 onQuestionSelect={onQuestionSelect}
+                isExpanded={isExpanded}
               />
             </TabsContent>
           ))}
