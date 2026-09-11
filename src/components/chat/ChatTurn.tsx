@@ -44,7 +44,7 @@ function AssistantBubble({
       <ChatBubble role="assistant">
         <div className="flex items-center gap-2">
           <img src={loadingSpinner} alt="loading..." className="size-icon-md" />
-          <p className="text-label-assistive text-body-2 animate-pulse font-bold">
+          <p className="text-label-assistive text-body-2 animate-pulse font-semibold">
             답변 생성 중...
           </p>
         </div>

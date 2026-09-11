@@ -72,7 +72,7 @@ export default function NavBar({ children, onGoHome, onEndChat, dialogContainer 
             render={
               <Button
                 size="md"
-                className="bg-rc-slate-200 hover:bg-rc-gray-300 active:bg-rc-gray-400 active:text-label-normal text-label-alternative active:font-bold"
+                className="bg-rc-slate-200 hover:bg-rc-gray-300 active:bg-rc-gray-400 active:text-label-normal text-label-alternative"
               />
             }
           >

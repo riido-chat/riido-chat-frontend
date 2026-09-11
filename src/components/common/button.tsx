@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-button-primary-enabled text-rc-gray-0 text-label hover:bg-button-primary-hovered active:bg-button-primary-pressed',
+          'bg-button-primary-enabled text-rc-gray-0 text-label hover:bg-button-primary-hovered active:bg-button-primary-pressed active:font-semibold',
         icon: 'rounded-full bg-transparent text-icon-gray-enabled hover:bg-button-gray-enabled active:text-icon-gray-hovered',
         ghost:
           'text-caption font-normal rounded-full text-label-assistive hover:text-label-alternative hover:bg-button-gray-enabled active:bg-button-gray-hovered active:text-label-alternative aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative has-data-icon:font-normal',
@@ -22,7 +22,7 @@ const buttonVariants = cva(
         'console-danger':
           'gap-2 border-rc-rose-500 bg-rc-gray-0 text-label text-rc-rose-600 hover:bg-rc-rose-50 active:bg-rc-rose-100 active:font-semibold disabled:border-rc-gray-200 disabled:bg-background-tertiary disabled:text-label-assistive aria-disabled:border-rc-gray-200 aria-disabled:bg-background-tertiary aria-disabled:text-label-assistive aria-disabled:hover:bg-background-tertiary aria-disabled:active:bg-background-tertiary',
         outline:
-          'border-[0.8px] border-line-normal text-label text-label-alternative bg-button-tertiary-enabled hover:bg-button-tertiary-hovered hover:text-label-normal hover:font-bold active:bg-button-tertiary-pressed aria-expanded:bg-muted aria-expanded:text-foreground',
+          'border-[0.8px] border-line-normal text-label text-label-alternative bg-button-tertiary-enabled hover:bg-button-tertiary-hovered hover:text-label-normal hover:font-semibold active:bg-button-tertiary-pressed aria-expanded:bg-muted aria-expanded:text-foreground',
       },
       size: {
         default:

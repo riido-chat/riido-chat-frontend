@@ -41,7 +41,7 @@ export default function ChatWithheldBubble({ reasonCode }: ChatWithheldBubblePro
         <MdWarning className="size-icon-xl text-rc-iris-200" />
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-body-2 text-label-normal self-center font-bold">{title}</span>
+          <span className="text-body-2 text-label-normal self-center font-semibold">{title}</span>
           <span className="text-label text-label-alternative text-center whitespace-pre-line">
             {description}
           </span>
