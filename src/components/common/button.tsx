@@ -12,7 +12,7 @@ const buttonVariants = cva(
           'bg-button-primary-enabled text-rc-gray-0 text-label hover:bg-button-primary-hovered active:bg-button-primary-pressed active:font-semibold',
         icon: 'rounded-full bg-transparent text-icon-gray-enabled hover:bg-button-gray-enabled active:text-icon-gray-hovered',
         ghost:
-          'text-caption font-normal rounded-full text-label-assistive hover:text-label-alternative hover:bg-button-gray-enabled active:bg-button-gray-hovered active:text-label-alternative aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative has-data-icon:font-normal',
+          'text-caption font-normal rounded-full text-label-assistive hover:text-label-alternative hover:bg-button-gray-enabled active:bg-button-gray-hovered active:text-label-alternative active:font-medium aria-expanded:bg-button-tertiary-pressed aria-expanded:text-label-alternative has-data-icon:font-normal',
         link: 'text-button-primary-enabled underline-offset-4 hover:underline',
         // 운영콘솔 버튼
         'console-primary':
