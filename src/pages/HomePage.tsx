@@ -14,9 +14,6 @@ export default function HomePage() {
         <Link className="underline" to="/guide/faq">
           자주 묻는 질문
         </Link>
-        <Link className="underline" to="/console/document-groups">
-          관리자 페이지
-        </Link>
       </nav>
     </section>
   );

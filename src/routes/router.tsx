@@ -6,16 +6,10 @@ import GuidePage from '@/pages/GuidePage';
 import DocumentGroupListPage from '@/pages/console/DocumentGroupListPage';
 import DocumentGroupDetailPage from '@/pages/console/DocumentGroupDetailPage';
 
-export const router = createBrowserRouter([
+const ADMIN_HOSTNAME = 'admin.riido-chat.site';
+
+const adminRoutes = [
   {
-    element: <RootLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: 'guide/:sectionId', element: <GuidePage /> },
-    ],
-  },
-  {
-    path: 'console',
     element: <ConsoleLayout />,
     children: [
       { index: true, element: <Navigate to="document-groups" replace /> },
@@ -23,4 +17,18 @@ export const router = createBrowserRouter([
       { path: 'document-groups/:groupId', element: <DocumentGroupDetailPage /> },
     ],
   },
-]);
+];
+
+const publicRoutes = [
+  {
+    element: <RootLayout />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: 'guide/:sectionId', element: <GuidePage /> },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(
+  window.location.hostname === ADMIN_HOSTNAME ? adminRoutes : publicRoutes,
+);
