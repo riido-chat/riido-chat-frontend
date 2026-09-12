@@ -5,6 +5,10 @@ export type Citation = {
   sourceUrl: string;
 };
 
+export type RelatedSection = Citation & {
+  sourceKind: 'GITBOOK' | 'UPLOAD';
+};
+
 export type ChatRequest = {
   question: string;
   conversationId: string | null;
@@ -33,6 +37,7 @@ export type WithheldChatResponse = {
     message: string;
   };
   citations: Citation[];
+  relatedSections: RelatedSection[];
 };
 
 export type ErrorChatResponse = {
