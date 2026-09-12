@@ -17,6 +17,7 @@ export default function ChatBubble({
   ragRunId,
   rating = null,
   onRatingChange,
+  className,
   children,
   ...props
 }: ChatBubbleProps) {
@@ -27,7 +28,7 @@ export default function ChatBubble({
     <Message align={isUser ? 'end' : 'start'} {...props}>
       <MessageContent>
         <Bubble align={isUser ? 'end' : 'start'} variant={isUser ? 'user' : 'assistant'}>
-          <BubbleContent>{children}</BubbleContent>
+          <BubbleContent className={className}>{children}</BubbleContent>
         </Bubble>
         {isFeedbackVisible && (
           <MessageFooter className="px-0">
