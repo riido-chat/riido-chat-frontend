@@ -20,6 +20,7 @@ export default function ChatBubble({
   rating = null,
   onRatingChange,
   relatedSections = [],
+  className,
   children,
   ...props
 }: ChatBubbleProps) {
@@ -31,7 +32,7 @@ export default function ChatBubble({
     <Message align={isUser ? 'end' : 'start'} {...props}>
       <MessageContent>
         <Bubble align={isUser ? 'end' : 'start'} variant={isUser ? 'user' : 'assistant'}>
-          <BubbleContent>{children}</BubbleContent>
+          <BubbleContent className={className}>{children}</BubbleContent>
         </Bubble>
 
         {isFeedbackVisible && (
