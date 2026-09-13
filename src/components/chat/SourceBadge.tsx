@@ -13,6 +13,7 @@ const getDocumentUrl = (sourceUrl: string) => {
 
 export default function SourceBadge({ citation }: { citation: Citation }) {
   const documentUrl = citation.sourceUrl ? getDocumentUrl(citation.sourceUrl) : null;
+  const hasDocumentUrl = documentUrl !== null;
   const citationLabel = [
     `${citation.citationNumber}. ${citation.documentTitle}`,
     ...citation.sectionPath,
@@ -21,10 +22,12 @@ export default function SourceBadge({ citation }: { citation: Citation }) {
   return (
     <Badge
       variant="link"
-      render={documentUrl ? <a href={documentUrl} target="_blank" rel="noreferrer" /> : undefined}
-      disabled={!documentUrl}
+      render={
+        hasDocumentUrl ? <a href={documentUrl} target="_blank" rel="noreferrer" /> : undefined
+      }
+      disabled={!hasDocumentUrl}
     >
-      {documentUrl && <FaLink />}
+      {hasDocumentUrl && <FaLink />}
       <span className="min-w-0 truncate">{citationLabel}</span>
     </Badge>
   );
