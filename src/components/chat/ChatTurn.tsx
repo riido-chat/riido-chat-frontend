@@ -70,6 +70,7 @@ function AssistantBubble({
           ragRunId={response.ragRunId}
           rating={rating}
           onRatingChange={onRatingChange}
+          relatedSections={response.relatedSections}
         >
           <ChatWithheldBubble reasonCode={response.withheld.reasonCode} />
         </ChatBubble>
