@@ -26,14 +26,19 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = 'link',
+  disabled,
   render,
   ...props
-}: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) {
+}: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants> & { disabled?: boolean }) {
   return useRender({
     defaultTagName: 'span',
     props: mergeProps<'span'>(
       {
-        className: cn(badgeVariants({ variant }), className),
+        className: cn(
+          badgeVariants({ variant }),
+          disabled && 'opacity-50 pointer-events-none',
+          className,
+        ),
       },
       props,
     ),
@@ -41,6 +46,7 @@ function Badge({
     state: {
       slot: 'badge',
       variant,
+      disabled,
     },
   });
 }
