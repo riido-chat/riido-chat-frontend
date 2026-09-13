@@ -3,8 +3,8 @@ import { NavLink } from 'react-router';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { label: '문서 관리', to: '/console/document-groups' },
-  { label: '질문 로그', to: '/console/question-logs' },
+  { label: '문서 관리', to: '/document-groups' },
+  { label: '질문 로그', to: '/question-logs' },
 ];
 
 /**

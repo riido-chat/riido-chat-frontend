@@ -2,7 +2,11 @@ export type Citation = {
   citationNumber: number;
   documentTitle: string;
   sectionPath: string[];
-  sourceUrl: string;
+  sourceUrl: string | null;
+};
+
+export type RelatedSection = Citation & {
+  sourceKind: 'UPLOAD' | 'GITBOOK';
 };
 
 export type ChatRequest = {
@@ -33,6 +37,7 @@ export type WithheldChatResponse = {
     message: string;
   };
   citations: Citation[];
+  relatedSections: RelatedSection[];
 };
 
 export type ErrorChatResponse = {
