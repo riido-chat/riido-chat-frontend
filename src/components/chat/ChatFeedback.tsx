@@ -42,7 +42,7 @@ export default function ChatFeedback({ ragRunId, rating, onRatingChange }: ChatF
   return (
     <div className="flex flex-col gap-0.5">
       <p className="text-caption text-label-alternative font-medium">답변이 도움 되셨나요?</p>
-      <section className="flex items-center gap-0.5">
+      <section className="flex items-center gap-px">
         <Button
           variant="ghost"
           size="icon-xs"
