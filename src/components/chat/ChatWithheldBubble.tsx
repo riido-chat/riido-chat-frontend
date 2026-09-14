@@ -49,12 +49,9 @@ export default function ChatWithheldBubble({ reasonCode }: ChatWithheldBubblePro
         )}
         <span className="text-body-2 text-label-normal font-semibold">{title}</span>
       </section>
-      <section className="flex flex-col gap-2.5">
-        <span className="text-label text-label-alternative">
-          {description}
-          <br />
-          {INQUIRY_BUTTON_HINT}
-        </span>
+      <section className="text-label text-label-alternative flex flex-col gap-1.5">
+        <span>{description}</span>
+        <span>{INQUIRY_BUTTON_HINT}</span>
       </section>
       <Button
         variant="default"
