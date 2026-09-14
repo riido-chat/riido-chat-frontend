@@ -20,7 +20,6 @@ export default function ChatBubble({
   rating = null,
   onRatingChange,
   relatedSections = [],
-  className,
   children,
   ...props
 }: ChatBubbleProps) {
@@ -32,23 +31,25 @@ export default function ChatBubble({
     <Message align={isUser ? 'end' : 'start'} {...props}>
       <MessageContent>
         <Bubble align={isUser ? 'end' : 'start'} variant={isUser ? 'user' : 'assistant'}>
-          <BubbleContent className={className}>{children}</BubbleContent>
+          <BubbleContent>{children}</BubbleContent>
         </Bubble>
 
         {isFeedbackVisible && (
           <MessageFooter className="flex-col gap-2">
             {isRelatedDocsVisible && (
-              <div className="flex flex-col gap-3">
-                <section className="flex flex-col">
-                  <span className="text-label text-label-assistive font-semibold">
-                    원하는 내용을 찾지 못하셨나요?
-                  </span>
-                  <span className="text-caption text-label-assistive font-normal">
-                    아래 문서를 확인해보시거나, 더 구체적인 질문을 입력해 주세요.
-                  </span>
-                </section>
-                <SourceBadgeList citations={relatedSections} />
-              </div>
+              <Bubble align="start" variant="assistant">
+                <BubbleContent className="flex flex-col gap-3">
+                  <section className="flex flex-col">
+                    <span className="text-label text-label-normal font-semibold">
+                      찾으시는 내용과 관련된 문서를 추천해드려요.
+                    </span>
+                    <span className="text-label text-label-alternative font-normal">
+                      아래 문서를 확인해보시거나, 더 구체적인 질문을 입력해 주세요.
+                    </span>
+                  </section>
+                  <SourceBadgeList citations={relatedSections} />
+                </BubbleContent>
+              </Bubble>
             )}
             <ChatFeedback ragRunId={ragRunId} rating={rating} onRatingChange={onRatingChange} />
           </MessageFooter>

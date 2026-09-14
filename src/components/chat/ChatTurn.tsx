@@ -71,7 +71,6 @@ function AssistantBubble({
           rating={rating}
           onRatingChange={onRatingChange}
           relatedSections={response.relatedSections}
-          className="p-3"
         >
           <ChatWithheldBubble reasonCode={response.withheld.reasonCode} />
         </ChatBubble>
