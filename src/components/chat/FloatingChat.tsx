@@ -135,7 +135,7 @@ function FloatingChatContent() {
         onEndChat={view === 'chat' ? handleEndChat : undefined}
         dialogContainer={chatContainerRef}
       >
-        뤼이도 RAG 챗봇
+        뤼이도 챗봇
       </NavBar>
 
       <MessageScroller className="flex-1">
