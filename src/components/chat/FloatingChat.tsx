@@ -38,11 +38,12 @@ function FloatingChatContent() {
 
   const view: ChatView =
     chatTurns.length > 0 ? 'chat' : isRecommendationExpanded ? 'home-expanded' : 'home';
+  const latestResponse = chatTurns[chatTurns.length - 1]?.response;
 
   useEffect(() => {
     if (chatTurns.length === 0) return;
     scrollToEnd({ behavior: 'smooth' });
-  }, [chatTurns, scrollToEnd]);
+  }, [chatTurns.length, latestResponse, scrollToEnd]);
 
   const requestChat = async (turnId: string, question: string) => {
     const controller = new AbortController();
