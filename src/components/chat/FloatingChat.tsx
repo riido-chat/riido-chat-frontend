@@ -15,6 +15,7 @@ import {
   MessageScrollerItem,
   useMessageScroller,
 } from '@/components/common/message-scroller';
+import homeCharacter from '@/assets/animations/home_animation.apng';
 
 type ChatView = 'home' | 'home-expanded' | 'chat';
 
@@ -153,6 +154,9 @@ function FloatingChatContent() {
                   messageId="recommendations"
                   className={cn(view === 'home' && 'mt-auto')}
                 >
+                  {view === 'home' && (
+                    <img src={homeCharacter} alt="riido-charactor" className="mb-8 w-88.75" />
+                  )}
                   <RecommendedQuestionSection
                     onQuestionSelect={handleSubmit}
                     isExpanded={isRecommendationExpanded}
