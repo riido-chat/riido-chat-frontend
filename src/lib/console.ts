@@ -1,4 +1,5 @@
 import type {
+  AnswerStatus,
   AppliedStatus,
   ChunkStats,
   ConsoleDocument,
@@ -6,8 +7,11 @@ import type {
   GitbookSyncCounts,
   GitbookSyncResult,
   GroupSource,
+  QuestionLogItem,
   ReindexResult,
   SearchStatus,
+  WithheldReason,
+  WithheldReasonCounts,
 } from '@/types/console.types';
 
 // 뱃지와 표에서 쓰는 짧은 라벨. 원시 enum은 화면 문구로 노출하지 않는다.
@@ -135,3 +139,94 @@ export const formatGitbookSyncTarget = ({ rootUrl, counts }: GitbookSyncResult) 
  */
 export const hasGitbookSyncChanges = ({ created, updated, removed }: GitbookSyncCounts) =>
   created + updated + removed > 0;
+
+// 값이 없는 칸의 표기. 세부 문제 없음, 해당 없음 같은 문구 대신 하이픈 하나만 적는다.
+export const EMPTY_VALUE = '-';
+
+// 질문 로그의 건수 표기. 0 이어도 없음으로 바꾸지 않고 0건으로 적는다.
+export const formatQuestionCount = (count: number) => `${count.toLocaleString('ko-KR')}건`;
+
+// 대시보드 타일과 질문 목록 배지가 함께 쓰는 보류 사유 라벨. 원시 enum 은 화면에 노출하지 않는다.
+export const WITHHELD_REASON_LABEL: Record<keyof WithheldReasonCounts, string> = {
+  insufficientEvidence: '근거 부족',
+  ambiguousQuestion: '질문 모호',
+  outOfScope: '범위 밖',
+  unverifiableAnswer: '검증 실패',
+};
+
+// 사유 내역은 명세가 정한 순서대로 적으므로 객체 키 순서에 기대지 않는다.
+const WITHHELD_REASON_ORDER: (keyof WithheldReasonCounts)[] = [
+  'insufficientEvidence',
+  'ambiguousQuestion',
+  'outOfScope',
+  'unverifiableAnswer',
+];
+
+/**
+ * 답변 불가 타일 아래의 보류 사유 내역 한 줄.
+ * 사유를 모르는 보류는 어느 항목에도 들어가지 않아 네 수의 합이 답변 불가 수보다 작을 수 있다.
+ */
+export const formatWithheldReasonCounts = (counts: WithheldReasonCounts) =>
+  WITHHELD_REASON_ORDER.map((reason) => `${WITHHELD_REASON_LABEL[reason]} ${counts[reason]}`).join(
+    ' · ',
+  );
+
+// 질문 단위 답변 상태의 뱃지 라벨. 보류는 사유를 알 때 아래 함수가 사유를 이어 붙인다.
+export const ANSWER_STATUS_LABEL: Record<AnswerStatus, string> = {
+  ANSWERED: '답변',
+  CACHED_ANSWER: '캐시 답변',
+  WITHHELD: '답변 보류',
+  ERROR: '오류',
+};
+
+// 서버 enum 으로 온 보류 사유를 타일과 같은 라벨로 바꾼다.
+const WITHHELD_REASON_ENUM_LABEL: Record<WithheldReason, string> = {
+  INSUFFICIENT_EVIDENCE: WITHHELD_REASON_LABEL.insufficientEvidence,
+  AMBIGUOUS_QUESTION: WITHHELD_REASON_LABEL.ambiguousQuestion,
+  OUT_OF_SCOPE: WITHHELD_REASON_LABEL.outOfScope,
+  UNVERIFIABLE_ANSWER: WITHHELD_REASON_LABEL.unverifiableAnswer,
+};
+
+/**
+ * 답변 상태 뱃지 한 줄. 한 행에 뱃지는 하나만 붙이므로 보류 사유도 뱃지 안에 적는다.
+ * 사유를 모르는 보류는 답변 보류 로만 적는다.
+ */
+export const formatAnswerStatusLabel = ({
+  answerStatus,
+  withheldReason,
+}: Pick<QuestionLogItem, 'answerStatus' | 'withheldReason'>) =>
+  answerStatus === 'WITHHELD' && withheldReason !== null
+    ? `보류 - ${WITHHELD_REASON_ENUM_LABEL[withheldReason]}`
+    : ANSWER_STATUS_LABEL[answerStatus];
+
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
+/**
+ * 질문 시각의 상대 표기. 서버는 UTC ISO 문자열만 주므로 표기는 화면이 만든다.
+ * 일주일 안은 상대 시각으로, 그 밖은 날짜로 적어 표 폭 84 안에 들어가게 한다.
+ */
+export const formatRelativeTime = (isoString: string, now = Date.now()) => {
+  const asked = new Date(isoString);
+  const elapsed = now - asked.getTime();
+
+  if (elapsed < MINUTE_MS) return '방금 전';
+  if (elapsed < HOUR_MS) return `${Math.floor(elapsed / MINUTE_MS)}분 전`;
+  if (elapsed < DAY_MS) return `${Math.floor(elapsed / HOUR_MS)}시간 전`;
+
+  const days = Math.floor(elapsed / DAY_MS);
+
+  if (days === 1) return '어제';
+  if (days < 7) return `${days}일 전`;
+
+  return asked.toLocaleDateString('ko-KR', {
+    year: asked.getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+};
+
+// 상대 시각 셀의 title 에 두는 절대 시각. 표에는 상대 표기만 보인다.
+export const formatAbsoluteTime = (isoString: string) =>
+  new Date(isoString).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });

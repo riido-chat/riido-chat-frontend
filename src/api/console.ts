@@ -5,6 +5,10 @@ import type {
   DocumentUploadRequest,
   DocumentUploadResult,
   GitbookSyncResult,
+  QuestionLogDashboard,
+  QuestionLogDocumentList,
+  QuestionLogPage,
+  QuestionLogQuery,
   ReindexResult,
 } from '@/types/console.types';
 
@@ -165,4 +169,52 @@ export function syncGitbook(groupId: number, sourceUrl: string) {
   return postConsole<GitbookSyncResult>(`/api/admin/document-groups/${groupId}/gitbook-sync`, {
     sourceUrl,
   });
+}
+
+/**
+ * 질문 로그 대시보드 조회. 문서 그룹의 질문 로그를 기간 없이 전체 누적으로 집계한다.
+ * 상단 타일, 자주 묻는 세부 문제, 답변 보류가 많은 문서를 한 번에 돌려주고,
+ * 문서 목록 미리보기와 최근 질문 미리보기는 각각 문서 목록, 질문 목록 API 를 쓴다.
+ */
+export function fetchQuestionLogDashboard(groupId: number, signal?: AbortSignal) {
+  return getConsole<QuestionLogDashboard>(
+    `/api/admin/document-groups/${groupId}/question-log/dashboard`,
+    signal,
+  );
+}
+
+/**
+ * 질문 목록 조회. 문서 그룹의 질문을 최신순으로 페이지 단위로 돌려주는 읽기 전용 엔드포인트다.
+ * 값이 없는 쿼리는 보내지 않아 서버 기본값을 따르게 하고, 대시보드 미리보기는 size=3 만 준다.
+ */
+export function fetchQuestionLogQuestions(
+  groupId: number,
+  query: QuestionLogQuery = {},
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) {
+      params.set(key, String(value));
+    }
+  }
+
+  const search = params.size > 0 ? `?${params}` : '';
+
+  return getConsole<QuestionLogPage>(
+    `/api/admin/document-groups/${groupId}/question-log/questions${search}`,
+    signal,
+  );
+}
+
+/**
+ * 문서 목록 조회. 문서 그룹의 문서마다 질문 수, 보류 수, 세부 문제 수를 계산해 페이지 없이 전체 행을 돌려준다.
+ * 정렬은 서버가 질문 수 내림차순으로 맞춰 주므로 화면에서 다시 정렬하지 않는다.
+ */
+export function fetchQuestionLogDocuments(groupId: number, signal?: AbortSignal) {
+  return getConsole<QuestionLogDocumentList>(
+    `/api/admin/document-groups/${groupId}/question-log/documents`,
+    signal,
+  );
 }
