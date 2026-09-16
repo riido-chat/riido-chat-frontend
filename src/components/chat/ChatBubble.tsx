@@ -39,7 +39,7 @@ export default function ChatBubble({
             {isRelatedDocsVisible && (
               <Bubble align="start" variant="assistant">
                 <BubbleContent className="flex flex-col gap-3">
-                  <section className="flex flex-col">
+                  <section className="flex flex-col gap-0.5">
                     <span className="text-label text-label-normal font-semibold">
                       찾으시는 내용과 관련된 문서를 추천해드려요.
                     </span>
