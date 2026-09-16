@@ -49,14 +49,14 @@ export default function ChatWithheldBubble({ reasonCode }: ChatWithheldBubblePro
         )}
         <span className="text-body-2 text-label-normal font-semibold">{title}</span>
       </section>
-      <section className="text-label text-label-alternative flex flex-col gap-1.5">
+      <section className="text-label text-label-alternative flex flex-col">
         <span>{description}</span>
         <span>{INQUIRY_BUTTON_HINT}</span>
       </section>
       <Button
         variant="default"
         size="inquiry"
-        className="w-full"
+        className="mt-1.5 w-full"
         nativeButton={false}
         render={<a href="https://www.riido.io/" target="_blank" rel="noreferrer" />}
       >
