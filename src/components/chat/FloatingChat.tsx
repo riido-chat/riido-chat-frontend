@@ -21,7 +21,7 @@ type ChatView = 'home' | 'home-expanded' | 'chat';
 
 export default function FloatingChat() {
   return (
-    <MessageScrollerProvider autoScroll>
+    <MessageScrollerProvider>
       <FloatingChatContent />
     </MessageScrollerProvider>
   );
@@ -42,7 +42,7 @@ function FloatingChatContent() {
   useEffect(() => {
     if (chatTurns.length === 0) return;
     scrollToEnd({ behavior: 'smooth' });
-  }, [chatTurns.length, scrollToEnd]);
+  }, [chatTurns, scrollToEnd]);
 
   const requestChat = async (turnId: string, question: string) => {
     const controller = new AbortController();
