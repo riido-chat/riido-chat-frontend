@@ -20,30 +20,51 @@ import homeCharacter from '@/assets/animations/home_animation.apng';
 type ChatView = 'home' | 'home-expanded' | 'chat';
 
 export default function FloatingChat() {
+  const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
+  const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
+  const view: ChatView =
+    chatTurns.length > 0 ? 'chat' : isRecommendationExpanded ? 'home-expanded' : 'home';
+
   return (
-    <MessageScrollerProvider>
-      <FloatingChatContent />
+    <MessageScrollerProvider autoScroll={view === 'chat'}>
+      <FloatingChatContent
+        isRecommendationExpanded={isRecommendationExpanded}
+        setIsRecommendationExpanded={setIsRecommendationExpanded}
+        chatTurns={chatTurns}
+        setChatTurns={setChatTurns}
+        view={view}
+      />
     </MessageScrollerProvider>
   );
 }
 
-function FloatingChatContent() {
-  const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
+type FloatingChatContentProps = {
+  isRecommendationExpanded: boolean;
+  setIsRecommendationExpanded: (nextState: boolean | ((previousState: boolean) => boolean)) => void;
+  chatTurns: ChatTurnData[];
+  setChatTurns: (
+    nextState: ChatTurnData[] | ((previousState: ChatTurnData[]) => ChatTurnData[]),
+  ) => void;
+  view: ChatView;
+};
+
+function FloatingChatContent({
+  isRecommendationExpanded,
+  setIsRecommendationExpanded,
+  chatTurns,
+  setChatTurns,
+  view,
+}: FloatingChatContentProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { scrollToEnd } = useMessageScroller();
 
-  const view: ChatView =
-    chatTurns.length > 0 ? 'chat' : isRecommendationExpanded ? 'home-expanded' : 'home';
-  const latestResponse = chatTurns[chatTurns.length - 1]?.response;
-
   useEffect(() => {
     if (chatTurns.length === 0) return;
     scrollToEnd({ behavior: 'smooth' });
-  }, [chatTurns.length, latestResponse, scrollToEnd]);
+  }, [chatTurns.length, scrollToEnd]);
 
   const requestChat = async (turnId: string, question: string) => {
     const controller = new AbortController();
