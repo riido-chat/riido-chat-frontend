@@ -177,7 +177,11 @@ function FloatingChatContent({
                   className={cn(view === 'home' && 'mt-auto')}
                 >
                   {view === 'home' && (
-                    <img src={homeCharacter} alt="riido-charactor" className="mb-8 w-88.75" />
+                    <img
+                      src={homeCharacter}
+                      alt="riido-character"
+                      className="mx-auto mb-8 block w-full max-w-88.75"
+                    />
                   )}
                   <RecommendedQuestionSection
                     onQuestionSelect={handleSubmit}
