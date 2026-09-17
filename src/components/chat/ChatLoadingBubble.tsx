@@ -2,7 +2,7 @@ import ChatBubble from '@/components/chat/ChatBubble';
 import { useEffect, useState } from 'react';
 import loadingSpinner from '@/assets/animations/loading-spinner.webp';
 
-const LOADING_MESSAGES = ['답변 생성 중...', '관련 내용 확인 중...', '답변 정리 중...'];
+const LOADING_MESSAGES = ['관련 내용 확인 중...', '답변 생성 중...', '답변 정리 중...'];
 
 export default function LoadingBubble() {
   const [messageIndex, setMessageIndex] = useState(0);
