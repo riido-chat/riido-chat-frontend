@@ -114,6 +114,17 @@ export async function fetchDocumentGroups(signal?: AbortSignal) {
 }
 
 /**
+ * 질문 로그 화면들이 집계 대상으로 삼는 문서 그룹. 질문 로그 API 는 문서 그룹 단위인데
+ * 사이드바의 질문 로그에는 그룹을 고르는 자리가 없어 문서 그룹 목록의 첫 그룹을 대상으로 삼는다.
+ * 그룹이 없으면 null 로 집계할 대상이 없음을 알리고, 그룹 선택 방식이 정해지면 이 함수만 바꾼다.
+ */
+export async function fetchFirstDocumentGroup(signal?: AbortSignal) {
+  const [group] = await fetchDocumentGroups(signal);
+
+  return group ?? null;
+}
+
+/**
  * 문서 그룹 상세 조회. 요약, 수집 원천 목록, 문서 표를 한 번에 돌려주고 상태는 저장하지 않고 계산한다.
  * 문서 표에는 enabled 이고 READY 판이 있는 문서만 들어가며, 없는 그룹이면 404 NOT_FOUND 다.
  * 실행이 끝난 뒤 배경 상세를 갱신하는 재조회도 같은 호출이다.

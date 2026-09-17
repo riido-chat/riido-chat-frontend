@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 import ChevronRight from '@/assets/icons/ChevronRight.svg?react';
 import {
-  fetchDocumentGroups,
+  fetchFirstDocumentGroup,
   fetchQuestionLogDashboard,
   fetchQuestionLogDocuments,
   fetchQuestionLogQuestions,
@@ -54,17 +54,16 @@ const toBlockResult = <T,>(settled: PromiseSettledResult<T>): BlockResult<T> =>
     : { status: 'failed', message: toConsoleApiError(settled.reason).message };
 
 /**
- * 대시보드와 미리보기는 문서 그룹 단위로 집계되지만 사이드바의 질문 로그에는 그룹을 고르는 자리가 없다.
- * 그래서 문서 그룹 목록의 첫 그룹을 대상으로 삼고, 그룹이 없으면 null 로 빈 상태를 알린다.
+ * 대시보드와 미리보기는 문서 목록 화면과 같은 첫 문서 그룹을 대상으로 삼고, 그룹이 없으면 null 로 빈 상태를 알린다.
  * 집계, 문서 목록, 질문 목록은 하나가 실패해도 나머지를 보이도록 함께 기다린 뒤 각각의 결과로 나눈다.
  * 문서 목록은 페이지가 없어 전체를 받아 앞 3행만 자르고, 질문 목록은 size 로 3건만 받는다.
  */
 async function fetchFirstGroupDashboard(
   signal: AbortSignal,
 ): Promise<QuestionLogDashboardData | null> {
-  const [group] = await fetchDocumentGroups(signal);
+  const group = await fetchFirstDocumentGroup(signal);
 
-  if (!group) {
+  if (group === null) {
     return null;
   }
 

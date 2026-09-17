@@ -5,6 +5,7 @@ import HomePage from '@/pages/HomePage';
 import DocumentGroupListPage from '@/pages/console/DocumentGroupListPage';
 import DocumentGroupDetailPage from '@/pages/console/DocumentGroupDetailPage';
 import QuestionLogDashboardPage from '@/pages/console/QuestionLogDashboardPage';
+import QuestionLogDocumentListPage from '@/pages/console/QuestionLogDocumentListPage';
 
 const ADMIN_HOSTNAME = 'admin.riido-chat.site';
 
@@ -12,6 +13,7 @@ const consolePages = [
   { path: 'document-groups', element: <DocumentGroupListPage /> },
   { path: 'document-groups/:groupId', element: <DocumentGroupDetailPage /> },
   { path: 'question-logs', element: <QuestionLogDashboardPage /> },
+  { path: 'question-logs/documents', element: <QuestionLogDocumentListPage /> },
 ];
 
 const consoleIndexRedirect = { index: true, element: <Navigate to="document-groups" replace /> };
