@@ -332,7 +332,7 @@ export type WithheldReason =
 export type QuestionLogItem = {
   // 턴 ID. 행 키로만 쓰고 화면에 표시하지 않는다.
   ragRunId: string;
-  // 질문 표시값. 재작성 질문이 있으면 그것이 우선이라 사용자가 친 문장과 다를 수 있다.
+  // 사용자가 입력한 질문 원문.
   question: string;
   // 귀속 문서. 문서 없음이나 분류 없음이면 null 이다.
   documentId: number | null;
