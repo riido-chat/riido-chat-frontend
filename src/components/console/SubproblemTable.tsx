@@ -11,13 +11,18 @@ import {
 } from '@/components/console/ConsoleTable';
 import { AnswerStatusBadge, ApplyStatusBadge } from '@/components/console/StatusBadge';
 import { useConsoleFetch } from '@/hooks/useConsoleFetch';
-import { EMPTY_VALUE, formatAbsoluteTime, formatRelativeTime } from '@/lib/console';
+import {
+  EMPTY_VALUE,
+  formatAbsoluteTime,
+  formatQuestionCount,
+  formatRelativeTime,
+} from '@/lib/console';
 import { cn } from '@/lib/utils';
 import type { CanonicalAnswer, DocumentSubproblem } from '@/types/console.types';
 
 const QUESTIONS_LOADING_MESSAGE = '속한 질문을 불러오고 있습니다.';
 const NO_CANONICAL_MESSAGE = '정본 없음';
-// 질문 목록 API 의 size 상한. 펼침에는 페이지가 없어 한 번에 받을 수 있는 최대치를 쓴다.
+// 펼침은 스크롤로 최근 질문을 최대 100건까지만 미리 본다.
 const QUESTIONS_PAGE_SIZE = 100;
 // 속한 질문 표는 헤더 40 과 행 60 다섯 줄까지만 보이고 그 아래는 표 안에서 세로로 스크롤한다.
 const QUESTIONS_MAX_HEIGHT_CLASS = 'max-h-85';
@@ -80,53 +85,62 @@ function SubproblemQuestions({ groupId, subproblemId }: { groupId: number; subpr
   }
 
   return (
-    <ConsoleTable
-      containerClassName={cn(QUESTIONS_MAX_HEIGHT_CLASS, 'overflow-y-auto')}
-      // 고정된 헤더는 border-collapse 아래에서 밑선이 함께 스크롤되므로 안쪽 그림자로 선을 다시 그린다.
-      className="min-w-0 [&_th]:sticky [&_th]:top-0 [&_th]:shadow-[inset_0_-1px_0_var(--color-line-normal)]"
-    >
-      <colgroup>
-        <col />
-        <col className="w-21" />
-        <col className="w-40" />
-      </colgroup>
-      <thead>
-        <tr>
-          <ConsoleTableHead>질문 원문</ConsoleTableHead>
-          <ConsoleTableHead>시각</ConsoleTableHead>
-          <ConsoleTableHead>답변 상태</ConsoleTableHead>
-        </tr>
-      </thead>
-      <ConsoleTableBody>
-        {state.data.items.length === 0 ? (
+    <div className="flex flex-col gap-1.5">
+      <ConsoleTable
+        containerClassName={cn(QUESTIONS_MAX_HEIGHT_CLASS, 'overflow-y-auto')}
+        // 고정된 헤더는 border-collapse 아래에서 밑선이 함께 스크롤되므로 안쪽 그림자로 선을 다시 그린다.
+        className="min-w-0 [&_th]:sticky [&_th]:top-0 [&_th]:shadow-[inset_0_-1px_0_var(--color-line-normal)]"
+      >
+        <colgroup>
+          <col />
+          <col className="w-21" />
+          <col className="w-40" />
+        </colgroup>
+        <thead>
           <tr>
-            <ConsoleTableCell colSpan={3} className="text-label-assistive h-15">
-              {EMPTY_VALUE}
-            </ConsoleTableCell>
+            <ConsoleTableHead>질문 원문</ConsoleTableHead>
+            <ConsoleTableHead>시각</ConsoleTableHead>
+            <ConsoleTableHead>답변 상태</ConsoleTableHead>
           </tr>
-        ) : (
-          state.data.items.map((item) => (
-            <tr key={item.ragRunId}>
-              <ConsoleTableCell className="h-15 truncate" title={item.question}>
-                {item.question}
-              </ConsoleTableCell>
-              <ConsoleTableCell
-                className="text-label-assistive h-15 truncate"
-                title={formatAbsoluteTime(item.askedAt)}
-              >
-                {formatRelativeTime(item.askedAt)}
-              </ConsoleTableCell>
-              <ConsoleTableCell className="h-15">
-                <AnswerStatusBadge
-                  answerStatus={item.answerStatus}
-                  withheldReason={item.withheldReason}
-                />
+        </thead>
+        <ConsoleTableBody>
+          {state.data.items.length === 0 ? (
+            <tr>
+              <ConsoleTableCell colSpan={3} className="text-label-assistive h-15">
+                {EMPTY_VALUE}
               </ConsoleTableCell>
             </tr>
-          ))
-        )}
-      </ConsoleTableBody>
-    </ConsoleTable>
+          ) : (
+            state.data.items.map((item) => (
+              <tr key={item.ragRunId}>
+                <ConsoleTableCell className="h-15 truncate" title={item.question}>
+                  {item.question}
+                </ConsoleTableCell>
+                <ConsoleTableCell
+                  className="text-label-assistive h-15 truncate"
+                  title={formatAbsoluteTime(item.askedAt)}
+                >
+                  {formatRelativeTime(item.askedAt)}
+                </ConsoleTableCell>
+                <ConsoleTableCell className="h-15">
+                  <AnswerStatusBadge
+                    answerStatus={item.answerStatus}
+                    withheldReason={item.withheldReason}
+                  />
+                </ConsoleTableCell>
+              </tr>
+            ))
+          )}
+        </ConsoleTableBody>
+      </ConsoleTable>
+
+      {state.data.totalCount > 0 && (
+        <p className="text-caption text-label-assistive self-end px-2">
+          전체 {formatQuestionCount(state.data.totalCount)} 중 최근{' '}
+          {formatQuestionCount(state.data.items.length)} 표시
+        </p>
+      )}
+    </div>
   );
 }
 
