@@ -10,7 +10,7 @@ export default function RootLayout() {
   const [hasEnteredChat, setHasEnteredChat] = useState(false);
 
   const handleChatToggle = () => {
-    if (!isChatOpen) setHasEnteredChat(true);
+    if (!hasEnteredChat) setHasEnteredChat(true);
     setIsChatOpen((prev) => !prev);
   };
 
