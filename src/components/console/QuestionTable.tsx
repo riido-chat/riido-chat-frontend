@@ -6,16 +6,23 @@ import {
 } from '@/components/console/ConsoleTable';
 import { AnswerStatusBadge } from '@/components/console/StatusBadge';
 import { EMPTY_VALUE, formatAbsoluteTime, formatRelativeTime } from '@/lib/console';
+import { cn } from '@/lib/utils';
 import type { QuestionLogItem } from '@/types/console.types';
+
+type QuestionTableProps = {
+  items: QuestionLogItem[];
+  /** 전체 목록 화면에서만 표와 같은 카드 안에 붙는 페이지네이션 영역 */
+  footer?: React.ReactNode;
+};
 
 /**
  * 질문 목록 표. 대시보드 미리보기와 질문 목록 화면이 같은 다섯 열을 쓴다.
  * 질문 원문 열만 남는 폭을 차지하고 나머지는 고정 폭이며, 한 행에 상태 뱃지는 하나만 붙는다.
  * 비어 있으면 표기 규칙대로 하이픈 한 줄만 보인다.
  */
-export default function QuestionTable({ items }: { items: QuestionLogItem[] }) {
-  return (
-    <ConsoleTable containerClassName="rounded-xl">
+export default function QuestionTable({ items, footer }: QuestionTableProps) {
+  const table = (
+    <ConsoleTable containerClassName={cn('rounded-xl', footer && 'rounded-none border-0')}>
       <colgroup>
         <col />
         <col className="w-45" />
@@ -71,5 +78,16 @@ export default function QuestionTable({ items }: { items: QuestionLogItem[] }) {
         )}
       </ConsoleTableBody>
     </ConsoleTable>
+  );
+
+  if (footer === undefined) {
+    return table;
+  }
+
+  return (
+    <div className="border-line-normal bg-background-default overflow-hidden rounded-xl border">
+      {table}
+      <div className="border-line-normal border-t">{footer}</div>
+    </div>
   );
 }
