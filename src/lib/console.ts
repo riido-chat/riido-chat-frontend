@@ -1,6 +1,7 @@
 import type {
   AnswerStatus,
   AppliedStatus,
+  ApplyStatus,
   ChunkStats,
   ConsoleDocument,
   DocumentGroupDetail,
@@ -145,6 +146,15 @@ export const EMPTY_VALUE = '-';
 
 // 질문 로그의 건수 표기. 0 이어도 없음으로 바꾸지 않고 0건으로 적는다.
 export const formatQuestionCount = (count: number) => `${count.toLocaleString('ko-KR')}건`;
+
+// 세부 문제는 건이 아니라 개로 센다. 0 이어도 없음으로 바꾸지 않는다.
+export const formatSubproblemCount = (count: number) => `${count.toLocaleString('ko-KR')}개`;
+
+// 세부 문제 단위 적용 상태의 뱃지 라벨. 질문 단위 답변 상태 라벨과 섞지 않는다.
+export const APPLY_STATUS_LABEL: Record<ApplyStatus, string> = {
+  APPLIED: '적용중',
+  NEEDS_CANONICAL: '적용 필요',
+};
 
 // 대시보드 타일과 질문 목록 배지가 함께 쓰는 보류 사유 라벨. 원시 enum 은 화면에 노출하지 않는다.
 export const WITHHELD_REASON_LABEL: Record<keyof WithheldReasonCounts, string> = {

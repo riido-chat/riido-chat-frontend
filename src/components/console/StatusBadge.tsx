@@ -1,8 +1,14 @@
 import { Badge } from '@/components/common/badge';
-import { APPLIED_STATUS_LABEL, formatAnswerStatusLabel, SEARCH_STATUS_LABEL } from '@/lib/console';
+import {
+  APPLIED_STATUS_LABEL,
+  APPLY_STATUS_LABEL,
+  formatAnswerStatusLabel,
+  SEARCH_STATUS_LABEL,
+} from '@/lib/console';
 import type {
   AnswerStatus,
   AppliedStatus,
+  ApplyStatus,
   QuestionLogItem,
   SearchStatus,
 } from '@/types/console.types';
@@ -38,6 +44,21 @@ export function AppliedStatusBadge({ status }: { status: AppliedStatus }) {
   return (
     <Badge variant={APPLIED_STATUS_TONE[status]} title={status}>
       {APPLIED_STATUS_LABEL[status]}
+    </Badge>
+  );
+}
+
+// 세부 문제 적용 상태의 톤. 승인 정본이 있으면 진행 톤, 정본이 필요하면 주의 톤이다.
+const APPLY_STATUS_TONE: Record<ApplyStatus, BadgeTone> = {
+  APPLIED: 'progress',
+  NEEDS_CANONICAL: 'attention',
+};
+
+/** 세부 문제 한 건의 적용 상태 뱃지. 적용중과 적용 필요 두 가지뿐이다. */
+export function ApplyStatusBadge({ status }: { status: ApplyStatus }) {
+  return (
+    <Badge variant={APPLY_STATUS_TONE[status]} title={status}>
+      {APPLY_STATUS_LABEL[status]}
     </Badge>
   );
 }

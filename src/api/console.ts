@@ -6,6 +6,7 @@ import type {
   DocumentUploadResult,
   GitbookSyncResult,
   QuestionLogDashboard,
+  QuestionLogDocumentDetail,
   QuestionLogDocumentList,
   QuestionLogPage,
   QuestionLogQuery,
@@ -226,6 +227,21 @@ export function fetchQuestionLogQuestions(
 export function fetchQuestionLogDocuments(groupId: number, signal?: AbortSignal) {
   return getConsole<QuestionLogDocumentList>(
     `/api/admin/document-groups/${groupId}/question-log/documents`,
+    signal,
+  );
+}
+
+/**
+ * 문서 상세 조회. 문서 요약 수치, 활성 세부 문제, 각 세부 문제의 포함·제외 기준과 승인 정본을 한 번에 돌려준다.
+ * 문서 상세 화면의 초기 조회에 쓰고, 세부 문제에 속한 질문은 질문 목록 API 에 subproblemId 를 주어 따로 받는다.
+ */
+export function fetchQuestionLogDocumentDetail(
+  groupId: number,
+  documentId: number,
+  signal?: AbortSignal,
+) {
+  return getConsole<QuestionLogDocumentDetail>(
+    `/api/admin/document-groups/${groupId}/question-log/documents/${documentId}/full`,
     signal,
   );
 }

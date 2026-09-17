@@ -398,3 +398,54 @@ export type QuestionLogDocumentList = {
   // 분류 행이 없는 질문 수. 판별 스위치가 꺼져 있던 턴이 여기에 든다. 화면 행으로 쓰지 않는다.
   unclassifiedQuestionCount: number;
 };
+
+/**
+ * 세부 문제 단위 적용 상태. 승인 정본이 있으면 APPLIED, 없으면 NEEDS_CANONICAL 이다.
+ * 질문 단위 답변 상태 네 갈래와 축이 다르므로 섞지 않는다.
+ */
+export type ApplyStatus = 'APPLIED' | 'NEEDS_CANONICAL';
+
+/** 승인(APPROVED)된 정본 답변. 승인 정본이 없으면 세부 문제의 canonicalAnswer 가 null 이다. */
+export type CanonicalAnswer = {
+  // 정본 본문 Markdown
+  contentMarkdown: string;
+  // 정본 적용 범위 규칙. 펼침의 적용 범위 규칙 줄로 보인다.
+  applicabilityRules: string[];
+};
+
+/** 문서에 속한 활성 세부 문제 한 건. ARCHIVED 는 오지 않고 질문 수 내림차순, 이름, ID 순으로 정렬되어 온다. */
+export type DocumentSubproblem = {
+  subproblemId: string;
+  name: string;
+  // 이 세부 문제로 분류된 질문 수
+  questionCount: number;
+  // 승인 정본의 첫 번째 인용 문서와 절. 정본이나 첫 인용이 없으면 null 이다.
+  sourceSection: string | null;
+  applyStatus: ApplyStatus;
+  // 포함 기준과 제외 기준. 저장된 순서대로 오고 제외 기준은 없으면 빈 배열이다. 화면에는 두지 않는다.
+  inclusionCriteria: string[];
+  exclusionCriteria: string[];
+  canonicalAnswer: CanonicalAnswer | null;
+};
+
+/**
+ * 문서 상세 응답. 문서 요약 수치, 활성 세부 문제, 각 세부 문제의 승인 정본을 한 번에 돌려준다.
+ * 문서가 다른 그룹에 속하거나 그룹과 문서가 없으면 교차 그룹 노출을 막기 위해 같은 404 NOT_FOUND 다.
+ */
+export type QuestionLogDocumentDetail = {
+  document: {
+    documentId: number;
+    documentTitle: string;
+  };
+  summary: {
+    // 이 문서로 귀속된 질문 수
+    questionCount: number;
+    // 근거 부족으로 보류된 질문 수
+    insufficientEvidenceCount: number;
+    // 캐시 정본 답변으로 처리된 질문 수
+    cachedAnswerCount: number;
+    // 응답에 포함된 활성 세부 문제 수
+    subproblemCount: number;
+  };
+  subproblems: DocumentSubproblem[];
+};
