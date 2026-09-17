@@ -11,6 +11,7 @@ import {
 import { ConsoleFetchError, ConsoleLoading } from '@/components/console/ConsoleFetchFallback';
 import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
+import MetricTile from '@/components/console/MetricTile';
 import QuestionLogDocumentTable from '@/components/console/QuestionLogDocumentTable';
 import QuestionTable from '@/components/console/QuestionTable';
 import RankCard, { type RankRow } from '@/components/console/RankCard';
@@ -97,17 +98,6 @@ const toWithheldDocumentRow = (document: WithheldDocument): RankRow => ({
   title: document.documentTitle,
   value: `${WITHHELD_REASON_LABEL.insufficientEvidence} ${formatQuestionCount(document.insufficientEvidenceCount)}`,
 });
-
-/** 지표 타일 한 장. 숫자와 단위를 함께 적고 기간 라벨과 증감 표시는 두지 않는다. */
-function MetricTile({ label, value, detail }: { label: string; value: string; detail?: string }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-1 whitespace-nowrap">
-      <p className="text-label text-label-assistive font-medium">{label}</p>
-      <p className="text-title-2 text-label-strong font-bold">{value}</p>
-      {detail && <p className="text-label text-label-assistive font-medium">{detail}</p>}
-    </div>
-  );
-}
 
 /** 미리보기 블록의 제목. 제목과 더보기 화살표가 한 링크라 어느 쪽을 눌러도 목록 화면으로 간다. */
 function SectionLink({ title, to }: { title: string; to: string }) {
