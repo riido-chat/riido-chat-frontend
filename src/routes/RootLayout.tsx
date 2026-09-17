@@ -20,7 +20,7 @@ export default function RootLayout() {
       <div className="fixed right-6 bottom-6 z-50 flex flex-col items-end gap-4">
         {hasEnteredChat && (
           <div className={isChatOpen ? '' : 'hidden'}>
-            <FloatingChat />
+            <FloatingChat isOpen={isChatOpen} />
           </div>
         )}
         <Button
