@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import RootLayout from '@/routes/RootLayout';
 import ConsoleLayout from '@/routes/ConsoleLayout';
 import HomePage from '@/pages/HomePage';
-import GuidePage from '@/pages/GuidePage';
 import DocumentGroupListPage from '@/pages/console/DocumentGroupListPage';
 import DocumentGroupDetailPage from '@/pages/console/DocumentGroupDetailPage';
 import QuestionLogDashboardPage from '@/pages/console/QuestionLogDashboardPage';
@@ -27,10 +26,7 @@ const adminRoutes = [
 const publicRoutes = [
   {
     element: <RootLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: 'guide/:sectionId', element: <GuidePage /> },
-    ],
+    children: [{ index: true, element: <HomePage /> }],
   },
 ];
 

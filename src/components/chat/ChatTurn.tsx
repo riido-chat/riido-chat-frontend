@@ -1,12 +1,12 @@
 import ChatBubble from '@/components/chat/ChatBubble';
 import ChatErrorNotice from '@/components/chat/ChatErrorNotice';
+import ChatLoadingBubble from '@/components/chat/ChatLoadingBubble';
 import ChatWithheldBubble from '@/components/chat/ChatWithheldBubble';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
 import { MessageGroup } from '@/components/common/message';
 import { Separator } from '@/components/common/separator';
 import type { ChatTurnData, ChatTurnResponse, FeedbackRating } from '@/types/chat.types';
 import ReactMarkdown from 'react-markdown';
-import loadingSpinner from '@/assets/icons/loading-spinner.apng';
 
 type ChatTurnProps = {
   turn: ChatTurnData;
@@ -40,16 +40,7 @@ function AssistantBubble({
   onRetry?: () => void;
 }) {
   if (response === null) {
-    return (
-      <ChatBubble role="assistant">
-        <div className="flex items-center gap-2">
-          <img src={loadingSpinner} alt="loading..." className="size-icon-md" />
-          <p className="text-label-assistive text-body-2 animate-pulse font-semibold">
-            답변 생성 중...
-          </p>
-        </div>
-      </ChatBubble>
-    );
+    return <ChatLoadingBubble />;
   }
 
   switch (response.status) {
@@ -84,36 +75,38 @@ function AssistantBubble({
           rating={rating}
           onRatingChange={onRatingChange}
         >
-          <ReactMarkdown
-            components={{
-              code({ className, children }) {
-                return (
-                  <code
-                    className={`bg-rc-gray-200/70 rounded px-1 py-0.5 font-mono text-[0.85em] ${className ?? ''}`}
-                  >
+          <div className="animate-in fade-in duration-400">
+            <ReactMarkdown
+              components={{
+                code({ className, children }) {
+                  return (
+                    <code
+                      className={`bg-rc-gray-200/70 rounded px-1 py-0.5 font-mono text-[0.85em] ${className ?? ''}`}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+                pre({ children }) {
+                  return (
+                    <pre className="bg-rc-gray-900 text-rc-gray-0 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
+                      {children}
+                    </pre>
+                  );
+                },
+                ol: ({ children, start }) => (
+                  <ol start={start} className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">
                     {children}
-                  </code>
-                );
-              },
-              pre({ children }) {
-                return (
-                  <pre className="bg-rc-gray-900 text-rc-gray-0 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
-                    {children}
-                  </pre>
-                );
-              },
-              ol: ({ children, start }) => (
-                <ol start={start} className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">
-                  {children}
-                </ol>
-              ),
-              ul: ({ children }) => (
-                <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
-              ),
-            }}
-          >
-            {response.answer.answerMarkdown}
-          </ReactMarkdown>
+                  </ol>
+                ),
+                ul: ({ children }) => (
+                  <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
+                ),
+              }}
+            >
+              {response.answer.answerMarkdown}
+            </ReactMarkdown>
+          </div>
           <Separator className="mt-2 mb-3 h-[1.2px]" />
           <SourceBadgeList citations={response.citations} />
         </ChatBubble>

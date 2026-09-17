@@ -15,28 +15,54 @@ import {
   MessageScrollerItem,
   useMessageScroller,
 } from '@/components/common/message-scroller';
+import homeCharacter from '@/assets/animations/home-character.webp';
 
 type ChatView = 'home' | 'home-expanded' | 'chat';
 
-export default function FloatingChat() {
+export default function FloatingChat({ isOpen }: { isOpen: boolean }) {
+  const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
+  const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
+  const view: ChatView =
+    chatTurns.length > 0 ? 'chat' : isRecommendationExpanded ? 'home-expanded' : 'home';
+
   return (
-    <MessageScrollerProvider autoScroll>
-      <FloatingChatContent />
+    <MessageScrollerProvider autoScroll={view === 'chat'}>
+      <FloatingChatContent
+        isRecommendationExpanded={isRecommendationExpanded}
+        setIsRecommendationExpanded={setIsRecommendationExpanded}
+        chatTurns={chatTurns}
+        setChatTurns={setChatTurns}
+        view={view}
+        isOpen={isOpen}
+      />
     </MessageScrollerProvider>
   );
 }
 
-function FloatingChatContent() {
-  const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
+type FloatingChatContentProps = {
+  isRecommendationExpanded: boolean;
+  setIsRecommendationExpanded: (nextState: boolean | ((previousState: boolean) => boolean)) => void;
+  chatTurns: ChatTurnData[];
+  setChatTurns: (
+    nextState: ChatTurnData[] | ((previousState: ChatTurnData[]) => ChatTurnData[]),
+  ) => void;
+  view: ChatView;
+  isOpen: boolean;
+};
+
+function FloatingChatContent({
+  isRecommendationExpanded,
+  setIsRecommendationExpanded,
+  chatTurns,
+  setChatTurns,
+  view,
+  isOpen,
+}: FloatingChatContentProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { scrollToEnd } = useMessageScroller();
-
-  const view: ChatView =
-    chatTurns.length > 0 ? 'chat' : isRecommendationExpanded ? 'home-expanded' : 'home';
 
   useEffect(() => {
     if (chatTurns.length === 0) return;
@@ -153,6 +179,13 @@ function FloatingChatContent() {
                   messageId="recommendations"
                   className={cn(view === 'home' && 'mt-auto')}
                 >
+                  {isOpen && view === 'home' && (
+                    <img
+                      src={homeCharacter}
+                      alt="riido-character"
+                      className="mx-auto mb-8 block w-full max-w-88.75"
+                    />
+                  )}
                   <RecommendedQuestionSection
                     onQuestionSelect={handleSubmit}
                     isExpanded={isRecommendationExpanded}
