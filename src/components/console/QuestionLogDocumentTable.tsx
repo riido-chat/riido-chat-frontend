@@ -1,3 +1,5 @@
+import { Link, useNavigate } from 'react-router';
+
 import {
   ConsoleTable,
   ConsoleTableBody,
@@ -7,11 +9,16 @@ import {
 import { EMPTY_VALUE } from '@/lib/console';
 import type { QuestionLogDocument } from '@/types/console.types';
 
+const getDetailPath = (documentId: number) => `/question-logs/documents/${documentId}`;
+
 /**
  * 질문 로그의 문서 목록 표. 대시보드 미리보기와 문서 목록 화면이 같은 네 열을 쓴다.
  * 문서명 열만 남는 폭을 차지하고 수치 세 열은 고정 폭이며, 비어 있으면 표기 규칙대로 하이픈 한 줄만 보인다.
+ * 행은 항상 클릭할 수 있고 문서 상세로 이동한다.
  */
 export default function QuestionLogDocumentTable({ items }: { items: QuestionLogDocument[] }) {
+  const navigate = useNavigate();
+
   return (
     <ConsoleTable containerClassName="rounded-xl">
       <colgroup>
@@ -37,9 +44,20 @@ export default function QuestionLogDocumentTable({ items }: { items: QuestionLog
           </tr>
         ) : (
           items.map((document) => (
-            <tr key={document.documentId}>
-              <ConsoleTableCell className="truncate" title={document.documentTitle}>
-                {document.documentTitle}
+            <tr
+              key={document.documentId}
+              onClick={() => navigate(getDetailPath(document.documentId))}
+              className="hover:bg-rc-gray-50 cursor-pointer transition-colors"
+            >
+              <ConsoleTableCell className="truncate">
+                <Link
+                  to={getDetailPath(document.documentId)}
+                  title={document.documentTitle}
+                  onClick={(event) => event.stopPropagation()}
+                  className="focus-visible:ring-button-primary-enabled rounded-sm outline-none focus-visible:ring-2"
+                >
+                  {document.documentTitle}
+                </Link>
               </ConsoleTableCell>
               <ConsoleTableCell>{document.questionCount}</ConsoleTableCell>
               <ConsoleTableCell>{document.withheldCount}</ConsoleTableCell>
