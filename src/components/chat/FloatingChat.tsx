@@ -19,7 +19,7 @@ import homeCharacter from '@/assets/animations/home-character.webp';
 
 type ChatView = 'home' | 'home-expanded' | 'chat';
 
-export default function FloatingChat() {
+export default function FloatingChat({ isOpen }: { isOpen: boolean }) {
   const [isRecommendationExpanded, setIsRecommendationExpanded] = useState(false);
   const [chatTurns, setChatTurns] = useState<ChatTurnData[]>([]);
   const view: ChatView =
@@ -33,6 +33,7 @@ export default function FloatingChat() {
         chatTurns={chatTurns}
         setChatTurns={setChatTurns}
         view={view}
+        isOpen={isOpen}
       />
     </MessageScrollerProvider>
   );
@@ -46,6 +47,7 @@ type FloatingChatContentProps = {
     nextState: ChatTurnData[] | ((previousState: ChatTurnData[]) => ChatTurnData[]),
   ) => void;
   view: ChatView;
+  isOpen: boolean;
 };
 
 function FloatingChatContent({
@@ -54,6 +56,7 @@ function FloatingChatContent({
   chatTurns,
   setChatTurns,
   view,
+  isOpen,
 }: FloatingChatContentProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,7 +179,7 @@ function FloatingChatContent({
                   messageId="recommendations"
                   className={cn(view === 'home' && 'mt-auto')}
                 >
-                  {view === 'home' && (
+                  {isOpen && view === 'home' && (
                     <img
                       src={homeCharacter}
                       alt="riido-character"

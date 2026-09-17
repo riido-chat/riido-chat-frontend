@@ -84,36 +84,38 @@ function AssistantBubble({
           rating={rating}
           onRatingChange={onRatingChange}
         >
-          <ReactMarkdown
-            components={{
-              code({ className, children }) {
-                return (
-                  <code
-                    className={`bg-rc-gray-200/70 rounded px-1 py-0.5 font-mono text-[0.85em] ${className ?? ''}`}
-                  >
+          <div className="animate-in fade-in duration-400">
+            <ReactMarkdown
+              components={{
+                code({ className, children }) {
+                  return (
+                    <code
+                      className={`bg-rc-gray-200/70 rounded px-1 py-0.5 font-mono text-[0.85em] ${className ?? ''}`}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+                pre({ children }) {
+                  return (
+                    <pre className="bg-rc-gray-900 text-rc-gray-0 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
+                      {children}
+                    </pre>
+                  );
+                },
+                ol: ({ children, start }) => (
+                  <ol start={start} className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">
                     {children}
-                  </code>
-                );
-              },
-              pre({ children }) {
-                return (
-                  <pre className="bg-rc-gray-900 text-rc-gray-0 overflow-x-auto rounded-md p-3 text-sm [&>code]:bg-transparent [&>code]:p-0">
-                    {children}
-                  </pre>
-                );
-              },
-              ol: ({ children, start }) => (
-                <ol start={start} className="m-0 list-decimal space-y-1 pl-5 whitespace-normal">
-                  {children}
-                </ol>
-              ),
-              ul: ({ children }) => (
-                <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
-              ),
-            }}
-          >
-            {response.answer.answerMarkdown}
-          </ReactMarkdown>
+                  </ol>
+                ),
+                ul: ({ children }) => (
+                  <ul className="m-0 list-disc space-y-1 pl-5 whitespace-normal">{children}</ul>
+                ),
+              }}
+            >
+              {response.answer.answerMarkdown}
+            </ReactMarkdown>
+          </div>
           <Separator className="mt-2 mb-3 h-[1.2px]" />
           <SourceBadgeList citations={response.citations} />
         </ChatBubble>
