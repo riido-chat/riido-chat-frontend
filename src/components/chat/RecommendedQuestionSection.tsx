@@ -3,6 +3,7 @@ import { Button } from '@/components/common/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/common/tabs';
 import { cn } from '@/lib/utils';
 import { mockRecommendedQuestionTabs } from '@/mocks/recommendedQuestions';
+import { useState } from 'react';
 
 type RecommendedQuestionSectionProps = {
   onQuestionSelect: (question: string) => void;
@@ -15,9 +16,16 @@ export default function RecommendedQuestionSection({
   isExpanded,
   onExpand,
 }: RecommendedQuestionSectionProps) {
+  const [activeTab, setActiveTab] = useState(mockRecommendedQuestionTabs[0].value);
+
   return (
-    <div className="flex flex-col gap-8">
-      <section className={cn('flex flex-col gap-2', !isExpanded && 'text-center')}>
+    <div key={isExpanded ? 'expanded' : 'default'} className="flex flex-col gap-8">
+      <section
+        className={cn(
+          'animate-in fade-in slide-in-from-bottom-2 flex flex-col gap-2 duration-500',
+          !isExpanded && 'text-center',
+        )}
+      >
         <span className="text-title-2 text-label-normal font-bold whitespace-pre-line">
           {isExpanded
             ? `뤼이도를 잘 활용하실 수 있도록 \n 질문을 추천해드려요`
@@ -30,8 +38,8 @@ export default function RecommendedQuestionSection({
         )}
       </section>
 
-      <section>
-        <Tabs defaultValue={mockRecommendedQuestionTabs[0].value}>
+      <section className="animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards delay-100 duration-500">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className={isExpanded ? '' : 'self-center'}>
             {mockRecommendedQuestionTabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
