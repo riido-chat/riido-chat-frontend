@@ -8,12 +8,16 @@ export default function LoadingBubble() {
   const [messageIndex, setMessageIndex] = useState(0);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setMessageIndex((currentIndex) => (currentIndex + 1) % LOADING_MESSAGES.length);
+    const lastMessageIndex = LOADING_MESSAGES.length - 1;
+
+    if (messageIndex === lastMessageIndex) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setMessageIndex((currentIndex) => currentIndex + 1);
     }, 5000);
 
-    return () => window.clearInterval(intervalId);
-  }, []);
+    return () => window.clearTimeout(timeoutId);
+  }, [messageIndex]);
 
   return (
     <ChatBubble role="assistant">
