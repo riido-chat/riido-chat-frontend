@@ -1,12 +1,12 @@
 import ChatBubble from '@/components/chat/ChatBubble';
 import ChatErrorNotice from '@/components/chat/ChatErrorNotice';
+import ChatLoadingBubble from '@/components/chat/ChatLoadingBubble';
 import ChatWithheldBubble from '@/components/chat/ChatWithheldBubble';
 import SourceBadgeList from '@/components/chat/SourceBadgeList';
 import { MessageGroup } from '@/components/common/message';
 import { Separator } from '@/components/common/separator';
 import type { ChatTurnData, ChatTurnResponse, FeedbackRating } from '@/types/chat.types';
 import ReactMarkdown from 'react-markdown';
-import loadingSpinner from '@/assets/animations/loading-spinner.webp';
 
 type ChatTurnProps = {
   turn: ChatTurnData;
@@ -40,16 +40,7 @@ function AssistantBubble({
   onRetry?: () => void;
 }) {
   if (response === null) {
-    return (
-      <ChatBubble role="assistant">
-        <div className="flex items-center gap-2">
-          <img src={loadingSpinner} alt="loading..." className="size-icon-md" />
-          <p className="text-label-assistive text-body-2 animate-pulse font-semibold">
-            답변 생성 중...
-          </p>
-        </div>
-      </ChatBubble>
-    );
+    return <ChatLoadingBubble />;
   }
 
   switch (response.status) {
