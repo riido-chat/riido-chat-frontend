@@ -266,3 +266,186 @@ export type GitbookSyncOutcome =
   | { status: 'done'; result: GitbookSyncResult }
   // 화면에 보이는 문장은 응답의 message 그대로다.
   | { status: 'failed'; message: string };
+
+/**
+ * 답변 보류 사유별 건수. 대시보드 타일과 질문 목록 배지가 같은 네 가지 사유를 쓴다.
+ * 사유를 모르는 보류도 있어 네 값의 합이 unanswerableCount 보다 작을 수 있다.
+ */
+export type WithheldReasonCounts = {
+  // 근거 부족 (INSUFFICIENT_EVIDENCE)
+  insufficientEvidence: number;
+  // 질문 모호 (AMBIGUOUS_QUESTION)
+  ambiguousQuestion: number;
+  // 범위 밖 (OUT_OF_SCOPE)
+  outOfScope: number;
+  // 검증 실패 (UNVERIFIABLE_ANSWER)
+  unverifiableAnswer: number;
+};
+
+/** 자주 묻는 세부 문제 한 줄. 질문 수 내림차순으로 최대 5개가 온다. */
+export type FrequentSubproblem = {
+  // 펼침 조회와 질문 목록 필터에 쓰는 세부 문제 ID
+  subproblemId: string;
+  // 분류 당시가 아닌 현재 이름
+  name: string;
+  // 세부 문제가 속한 문서. 이 그룹 문서가 아니면 null 이다.
+  documentId: number | null;
+  // 문서 제목. 제목이 비어 있으면 문서 키가 온다.
+  documentTitle: string | null;
+  // 현재 분류가 이 세부 문제인 질문 수
+  questionCount: number;
+};
+
+/** 답변 보류가 많은 문서 한 줄. 근거 부족 수 내림차순으로 최대 5개가 온다. */
+export type WithheldDocument = {
+  documentId: number;
+  documentTitle: string;
+  // 이 문서로 귀속된 근거 부족 보류 건수. 화면의 근거 부족 N건이다.
+  insufficientEvidenceCount: number;
+};
+
+/**
+ * 질문 로그 대시보드 응답. 기간 없이 전체 누적으로 집계한 값이다.
+ * 턴이 없으면 수치는 0, 목록은 빈 배열로 200 이 오므로 빈 상태 표기는 화면이 정한다.
+ */
+export type QuestionLogDashboard = {
+  // 대상 턴 수. COMPLETED, WITHHELD, ERROR 턴만 센다.
+  questionCount: number;
+  // 답변 불가. WITHHELD 턴 수이며 오류는 넣지 않는다.
+  unanswerableCount: number;
+  withheldReasonCounts: WithheldReasonCounts;
+  frequentSubproblems: FrequentSubproblem[];
+  withheldDocuments: WithheldDocument[];
+};
+
+/**
+ * 질문 한 건의 답변 상태. 질문 단위 상태는 이 네 갈래이고 세부 문제 단위 상태와 섞지 않는다.
+ * WITHHELD 는 사유를 가리지 않으며 사유는 withheldReason 에 따로 온다.
+ */
+export type AnswerStatus = 'ANSWERED' | 'CACHED_ANSWER' | 'WITHHELD' | 'ERROR';
+
+// 답변 보류 사유. answerStatus 가 WITHHELD 이고 사유가 이 넷 중 하나일 때만 값이 있다.
+export type WithheldReason =
+  'INSUFFICIENT_EVIDENCE' | 'AMBIGUOUS_QUESTION' | 'OUT_OF_SCOPE' | 'UNVERIFIABLE_ANSWER';
+
+/** 질문 목록의 한 행. 최신순으로 정렬되어 오며 정렬 파라미터는 없다. */
+export type QuestionLogItem = {
+  // 턴 ID. 행 키로만 쓰고 화면에 표시하지 않는다.
+  ragRunId: string;
+  // 사용자가 입력한 질문 원문.
+  question: string;
+  // 귀속 문서. 문서 없음이나 분류 없음이면 null 이다.
+  documentId: number | null;
+  documentTitle: string | null;
+  // 현재 분류의 세부 문제. 분류가 없으면 null 이다.
+  subproblemId: string | null;
+  subproblemName: string | null;
+  // 질문 시각. UTC ISO 8601 이고 Z 로 끝나며, 상대 시각 표기는 화면이 만든다.
+  askedAt: string;
+  answerStatus: AnswerStatus;
+  withheldReason: WithheldReason | null;
+};
+
+/**
+ * 질문 목록 조회의 쿼리. 필터는 모두 AND 로 묶이고 이름은 camelCase 다.
+ * 대시보드 미리보기는 size 만 쓰고, 나머지는 질문 목록 화면과 세부 문제 펼침이 쓴다.
+ */
+export type QuestionLogQuery = {
+  answerStatus?: AnswerStatus;
+  documentId?: number;
+  // ABSENT 는 분류 없는 질문까지 포함하며 subproblemId 와 함께 줄 수 없다.
+  subproblemPresence?: 'PRESENT' | 'ABSENT';
+  subproblemId?: string;
+  // 검색어. 100자 이하이고 앞뒤 공백을 걷어 비면 검색하지 않는다.
+  q?: string;
+  // 1 이상. 기본 1
+  page?: number;
+  // 1 이상 100 이하. 기본 20
+  size?: number;
+};
+
+/** 질문 목록 응답. 결과가 없거나 마지막 페이지를 넘으면 items 는 빈 배열이고 totalCount 는 그대로다. */
+export type QuestionLogPage = {
+  items: QuestionLogItem[];
+  page: number;
+  size: number;
+  // 필터와 검색을 적용한 뒤 전체 건수
+  totalCount: number;
+};
+
+/** 문서 한 건의 질문 로그 수치. 질문이 1건 이상이거나 보관되지 않은 세부 문제가 1개 이상인 문서만 온다. */
+export type QuestionLogDocument = {
+  // 문서 원본 ID. 문서 상세 조회와 질문 목록 필터에 쓴다.
+  documentId: number;
+  // 문서 제목. 제목이 비어 있으면 문서 키가 온다.
+  documentTitle: string;
+  // 이 문서로 귀속된 질문 수
+  questionCount: number;
+  // 그중 WITHHELD 턴 수. 사유는 가리지 않는다.
+  withheldCount: number;
+  // ARCHIVED 가 아닌 세부 문제 수
+  subproblemCount: number;
+};
+
+/**
+ * 문서 목록 응답. 페이지 없이 전체 행이 질문 수 내림차순으로 온다.
+ * 대시보드 미리보기는 앞 3행만 보이고, 질문 목록의 문서 셀렉트 옵션으로도 쓴다.
+ */
+export type QuestionLogDocumentList = {
+  items: QuestionLogDocument[];
+  // 분류 행은 있지만 이 그룹 문서로 귀속되지 않은 질문 수. 화면 행으로 쓰지 않는다.
+  noDocumentQuestionCount: number;
+  // 분류 행이 없는 질문 수. 판별 스위치가 꺼져 있던 턴이 여기에 든다. 화면 행으로 쓰지 않는다.
+  unclassifiedQuestionCount: number;
+};
+
+/**
+ * 세부 문제 단위 적용 상태. 승인 정본이 있으면 APPLIED, 없으면 NEEDS_CANONICAL 이다.
+ * 질문 단위 답변 상태 네 갈래와 축이 다르므로 섞지 않는다.
+ */
+export type ApplyStatus = 'APPLIED' | 'NEEDS_CANONICAL';
+
+/** 승인(APPROVED)된 정본 답변. 승인 정본이 없으면 세부 문제의 canonicalAnswer 가 null 이다. */
+export type CanonicalAnswer = {
+  // 정본 본문 Markdown
+  contentMarkdown: string;
+  // 정본 적용 범위 규칙. 펼침의 적용 범위 규칙 줄로 보인다.
+  applicabilityRules: string[];
+};
+
+/** 문서에 속한 활성 세부 문제 한 건. ARCHIVED 는 오지 않고 질문 수 내림차순, 이름, ID 순으로 정렬되어 온다. */
+export type DocumentSubproblem = {
+  subproblemId: string;
+  name: string;
+  // 이 세부 문제로 분류된 질문 수
+  questionCount: number;
+  // 승인 정본의 첫 번째 인용 문서와 절. 정본이나 첫 인용이 없으면 null 이다.
+  sourceSection: string | null;
+  applyStatus: ApplyStatus;
+  // 포함 기준과 제외 기준. 저장된 순서대로 오고 제외 기준은 없으면 빈 배열이다. 화면에는 두지 않는다.
+  inclusionCriteria: string[];
+  exclusionCriteria: string[];
+  canonicalAnswer: CanonicalAnswer | null;
+};
+
+/**
+ * 문서 상세 응답. 문서 요약 수치, 활성 세부 문제, 각 세부 문제의 승인 정본을 한 번에 돌려준다.
+ * 문서가 다른 그룹에 속하거나 그룹과 문서가 없으면 교차 그룹 노출을 막기 위해 같은 404 NOT_FOUND 다.
+ */
+export type QuestionLogDocumentDetail = {
+  document: {
+    documentId: number;
+    documentTitle: string;
+  };
+  summary: {
+    // 이 문서로 귀속된 질문 수
+    questionCount: number;
+    // 근거 부족으로 보류된 질문 수
+    insufficientEvidenceCount: number;
+    // 캐시 정본 답변으로 처리된 질문 수
+    cachedAnswerCount: number;
+    // 응답에 포함된 활성 세부 문제 수
+    subproblemCount: number;
+  };
+  subproblems: DocumentSubproblem[];
+};

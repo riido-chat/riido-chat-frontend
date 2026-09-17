@@ -5,6 +5,11 @@ import type {
   DocumentUploadRequest,
   DocumentUploadResult,
   GitbookSyncResult,
+  QuestionLogDashboard,
+  QuestionLogDocumentDetail,
+  QuestionLogDocumentList,
+  QuestionLogPage,
+  QuestionLogQuery,
   ReindexResult,
 } from '@/types/console.types';
 
@@ -110,6 +115,18 @@ export async function fetchDocumentGroups(signal?: AbortSignal) {
 }
 
 /**
+ * 질문 로그 1차 화면의 조회 대상 문서 그룹.
+ * 현재 챗봇에 연결된 그룹을 별도로 식별하는 API가 없어 문서 그룹 목록의 첫 항목을 임시 대상으로 삼는다.
+ * 화면에는 이 함수가 고른 그룹명을 표시해 전체 그룹의 집계로 오인하지 않게 한다.
+ * 그룹 선택을 지원할 때는 선택값을 라우트에 보존하고 각 질문 로그 조회에 전달해야 한다.
+ */
+export async function fetchQuestionLogTargetGroup(signal?: AbortSignal) {
+  const [group] = await fetchDocumentGroups(signal);
+
+  return group ?? null;
+}
+
+/**
  * 문서 그룹 상세 조회. 요약, 수집 원천 목록, 문서 표를 한 번에 돌려주고 상태는 저장하지 않고 계산한다.
  * 문서 표에는 enabled 이고 READY 판이 있는 문서만 들어가며, 없는 그룹이면 404 NOT_FOUND 다.
  * 실행이 끝난 뒤 배경 상세를 갱신하는 재조회도 같은 호출이다.
@@ -165,4 +182,67 @@ export function syncGitbook(groupId: number, sourceUrl: string) {
   return postConsole<GitbookSyncResult>(`/api/admin/document-groups/${groupId}/gitbook-sync`, {
     sourceUrl,
   });
+}
+
+/**
+ * 질문 로그 대시보드 조회. 문서 그룹의 질문 로그를 기간 없이 전체 누적으로 집계한다.
+ * 상단 타일, 자주 묻는 세부 문제, 답변 보류가 많은 문서를 한 번에 돌려주고,
+ * 문서 목록 미리보기와 최근 질문 미리보기는 각각 문서 목록, 질문 목록 API 를 쓴다.
+ */
+export function fetchQuestionLogDashboard(groupId: number, signal?: AbortSignal) {
+  return getConsole<QuestionLogDashboard>(
+    `/api/admin/document-groups/${groupId}/question-log/dashboard`,
+    signal,
+  );
+}
+
+/**
+ * 질문 목록 조회. 문서 그룹의 질문을 최신순으로 페이지 단위로 돌려주는 읽기 전용 엔드포인트다.
+ * 값이 없는 쿼리는 보내지 않아 서버 기본값을 따르게 하고, 대시보드 미리보기는 size=3 만 준다.
+ */
+export function fetchQuestionLogQuestions(
+  groupId: number,
+  query: QuestionLogQuery = {},
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) {
+      params.set(key, String(value));
+    }
+  }
+
+  const search = params.size > 0 ? `?${params}` : '';
+
+  return getConsole<QuestionLogPage>(
+    `/api/admin/document-groups/${groupId}/question-log/questions${search}`,
+    signal,
+  );
+}
+
+/**
+ * 문서 목록 조회. 문서 그룹의 문서마다 질문 수, 보류 수, 세부 문제 수를 계산해 페이지 없이 전체 행을 돌려준다.
+ * 정렬은 서버가 질문 수 내림차순으로 맞춰 주므로 화면에서 다시 정렬하지 않는다.
+ */
+export function fetchQuestionLogDocuments(groupId: number, signal?: AbortSignal) {
+  return getConsole<QuestionLogDocumentList>(
+    `/api/admin/document-groups/${groupId}/question-log/documents`,
+    signal,
+  );
+}
+
+/**
+ * 문서 상세 조회. 문서 요약 수치, 활성 세부 문제, 각 세부 문제의 포함·제외 기준과 승인 정본을 한 번에 돌려준다.
+ * 문서 상세 화면의 초기 조회에 쓰고, 세부 문제에 속한 질문은 질문 목록 API 에 subproblemId 를 주어 따로 받는다.
+ */
+export function fetchQuestionLogDocumentDetail(
+  groupId: number,
+  documentId: number,
+  signal?: AbortSignal,
+) {
+  return getConsole<QuestionLogDocumentDetail>(
+    `/api/admin/document-groups/${groupId}/question-log/documents/${documentId}/full`,
+    signal,
+  );
 }
