@@ -6,7 +6,7 @@ import { MessageGroup } from '@/components/common/message';
 import { Separator } from '@/components/common/separator';
 import type { ChatTurnData, ChatTurnResponse, FeedbackRating } from '@/types/chat.types';
 import ReactMarkdown from 'react-markdown';
-import loadingSpinner from '@/assets/icons/loading-spinner.apng';
+import loadingSpinner from '@/assets/animations/loading-spinner.webp';
 
 type ChatTurnProps = {
   turn: ChatTurnData;
