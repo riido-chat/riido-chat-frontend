@@ -309,9 +309,9 @@ function QuestionListBody({ group, documents }: QuestionListData) {
         {state.status === 'failed' && (
           <ConsoleFetchError message={state.error.message} onRetry={retry} />
         )}
-        {/* 결과가 없는 것은 오류가 아니다. 질문이 한 건도 없는 초기 상태도 같은 빈 상태로 본다. */}
+        {/* 전체 결과가 없을 때만 빈 상태로 본다. 범위를 벗어난 빈 페이지는 이전으로 돌아갈 수 있게 페이지네이션을 남긴다. */}
         {state.status === 'ready' &&
-          (state.data.items.length === 0 ? (
+          (state.data.totalCount === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
             <QuestionTable
