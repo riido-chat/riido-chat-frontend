@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useParams } from 'react-router';
 
-import { fetchFirstDocumentGroup, fetchQuestionLogDocumentDetail } from '@/api/console';
+import { fetchQuestionLogDocumentDetail, fetchQuestionLogTargetGroup } from '@/api/console';
 import { ConsoleFetchError, ConsoleLoading } from '@/components/console/ConsoleFetchFallback';
 import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
@@ -9,8 +9,8 @@ import type { BreadcrumbEntry } from '@/components/console/ConsoleTopBar';
 import MetricTile from '@/components/console/MetricTile';
 import SubproblemTable from '@/components/console/SubproblemTable';
 import { useConsoleFetch } from '@/hooks/useConsoleFetch';
-import { formatQuestionCount, formatSubproblemCount } from '@/lib/console';
-import type { QuestionLogDocumentDetail } from '@/types/console.types';
+import { formatQuestionCount, formatQuestionLogScope, formatSubproblemCount } from '@/lib/console';
+import type { DocumentGroupSummary, QuestionLogDocumentDetail } from '@/types/console.types';
 
 const LOADING_MESSAGE = '문서를 불러오고 있습니다.';
 const EMPTY_GROUP_MESSAGE = '아직 문서 그룹이 없습니다.';
@@ -20,7 +20,7 @@ const PARENT_BREADCRUMB: BreadcrumbEntry[] = [
 ];
 
 type DocumentDetailData = {
-  groupId: number;
+  group: DocumentGroupSummary;
   detail: QuestionLogDocumentDetail;
 };
 
@@ -36,7 +36,7 @@ export default function QuestionLogDocumentDetailPage() {
 
   const fetchDetail = useCallback(
     async (signal: AbortSignal): Promise<DocumentDetailData | null> => {
-      const group = await fetchFirstDocumentGroup(signal);
+      const group = await fetchQuestionLogTargetGroup(signal);
 
       if (group === null) {
         return null;
@@ -44,7 +44,7 @@ export default function QuestionLogDocumentDetailPage() {
 
       const detail = await fetchQuestionLogDocumentDetail(group.groupId, numericDocumentId, signal);
 
-      return { groupId: group.groupId, detail };
+      return { group, detail };
     },
     [numericDocumentId],
   );
@@ -71,12 +71,15 @@ export default function QuestionLogDocumentDetailPage() {
     );
   }
 
-  const { groupId, detail } = state.data;
+  const { group, detail } = state.data;
 
   return (
     <ConsolePage breadcrumb={[...PARENT_BREADCRUMB, { label: detail.document.documentTitle }]}>
       <div className="flex flex-col gap-4">
-        <ConsolePageHeader title={detail.document.documentTitle} />
+        <ConsolePageHeader
+          title={detail.document.documentTitle}
+          description={formatQuestionLogScope(group.name)}
+        />
         {/* 근거 부족과 캐시 답변은 질문 단위 집계이고 세부 문제만 개수라 단위가 다르다. */}
         <section
           aria-label="문서 요약"
@@ -103,7 +106,7 @@ export default function QuestionLogDocumentDetailPage() {
         {/* 문서가 바뀌면 펼친 행을 접고 새로 시작하도록 문서마다 다른 트리를 만든다. */}
         <SubproblemTable
           key={detail.document.documentId}
-          groupId={groupId}
+          groupId={group.groupId}
           subproblems={detail.subproblems}
         />
       </section>

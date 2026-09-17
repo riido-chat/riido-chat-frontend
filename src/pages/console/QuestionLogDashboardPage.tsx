@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 import ChevronRight from '@/assets/icons/ChevronRight.svg?react';
 import {
-  fetchFirstDocumentGroup,
+  fetchQuestionLogTargetGroup,
   fetchQuestionLogDashboard,
   fetchQuestionLogDocuments,
   fetchQuestionLogQuestions,
@@ -19,10 +19,12 @@ import { useConsoleFetch } from '@/hooks/useConsoleFetch';
 import {
   EMPTY_VALUE,
   formatQuestionCount,
+  formatQuestionLogScope,
   formatWithheldReasonCounts,
   WITHHELD_REASON_LABEL,
 } from '@/lib/console';
 import type {
+  DocumentGroupSummary,
   FrequentSubproblem,
   QuestionLogDashboard,
   QuestionLogDocument,
@@ -44,6 +46,7 @@ const PREVIEW_SIZE = 3;
 type BlockResult<T> = { status: 'ready'; data: T } | { status: 'failed'; message: string };
 
 type QuestionLogDashboardData = {
+  group: DocumentGroupSummary;
   dashboard: BlockResult<QuestionLogDashboard>;
   documents: BlockResult<QuestionLogDocument[]>;
   questions: BlockResult<QuestionLogItem[]>;
@@ -55,14 +58,14 @@ const toBlockResult = <T,>(settled: PromiseSettledResult<T>): BlockResult<T> =>
     : { status: 'failed', message: toConsoleApiError(settled.reason).message };
 
 /**
- * 대시보드와 미리보기는 문서 목록 화면과 같은 첫 문서 그룹을 대상으로 삼고, 그룹이 없으면 null 로 빈 상태를 알린다.
+ * 대시보드와 미리보기는 질문 로그 1차 범위로 정한 문서 그룹을 대상으로 삼고, 그룹이 없으면 null 로 빈 상태를 알린다.
  * 집계, 문서 목록, 질문 목록은 하나가 실패해도 나머지를 보이도록 함께 기다린 뒤 각각의 결과로 나눈다.
  * 문서 목록은 페이지가 없어 전체를 받아 앞 3행만 자르고, 질문 목록은 size 로 3건만 받는다.
  */
-async function fetchFirstGroupDashboard(
+async function fetchQuestionLogDashboardData(
   signal: AbortSignal,
 ): Promise<QuestionLogDashboardData | null> {
-  const group = await fetchFirstDocumentGroup(signal);
+  const group = await fetchQuestionLogTargetGroup(signal);
 
   if (group === null) {
     return null;
@@ -79,6 +82,7 @@ async function fetchFirstGroupDashboard(
   ]);
 
   return {
+    group,
     dashboard: toBlockResult(dashboard),
     documents: toBlockResult(documents),
     questions: toBlockResult(questions),
@@ -147,7 +151,7 @@ function DashboardBlock({ dashboard }: { dashboard: QuestionLogDashboard }) {
  * 집계 실패는 타일 자리에, 목록 실패는 각 표 자리에 인라인 오류로 보이고, 다시 시도는 세 조회를 함께 반복한다.
  */
 export default function QuestionLogDashboardPage() {
-  const { state, retry } = useConsoleFetch(fetchFirstGroupDashboard);
+  const { state, retry } = useConsoleFetch(fetchQuestionLogDashboardData);
 
   if (state.status !== 'ready') {
     return (
@@ -167,7 +171,12 @@ export default function QuestionLogDashboardPage() {
   return (
     <ConsolePage breadcrumb={[{ label: '질문 로그' }, { label: '질문 분석 대시보드' }]}>
       <div className="flex flex-col gap-4">
-        <ConsolePageHeader title="질문 분석 대시보드" />
+        <ConsolePageHeader
+          title="질문 분석 대시보드"
+          description={
+            state.data === null ? undefined : formatQuestionLogScope(state.data.group.name)
+          }
+        />
 
         {/* 그룹이 없는 경우는 실패가 아니라 집계할 대상이 없는 성공이다. */}
         {state.data === null ? (

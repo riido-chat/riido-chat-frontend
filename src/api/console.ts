@@ -115,11 +115,12 @@ export async function fetchDocumentGroups(signal?: AbortSignal) {
 }
 
 /**
- * 질문 로그 화면들이 집계 대상으로 삼는 문서 그룹. 질문 로그 API 는 문서 그룹 단위인데
- * 사이드바의 질문 로그에는 그룹을 고르는 자리가 없어 문서 그룹 목록의 첫 그룹을 대상으로 삼는다.
- * 그룹이 없으면 null 로 집계할 대상이 없음을 알리고, 그룹 선택 방식이 정해지면 이 함수만 바꾼다.
+ * 질문 로그 1차 화면의 조회 대상 문서 그룹.
+ * 현재 챗봇에 연결된 그룹을 별도로 식별하는 API가 없어 문서 그룹 목록의 첫 항목을 임시 대상으로 삼는다.
+ * 화면에는 이 함수가 고른 그룹명을 표시해 전체 그룹의 집계로 오인하지 않게 한다.
+ * 그룹 선택을 지원할 때는 선택값을 라우트에 보존하고 각 질문 로그 조회에 전달해야 한다.
  */
-export async function fetchFirstDocumentGroup(signal?: AbortSignal) {
+export async function fetchQuestionLogTargetGroup(signal?: AbortSignal) {
   const [group] = await fetchDocumentGroups(signal);
 
   return group ?? null;

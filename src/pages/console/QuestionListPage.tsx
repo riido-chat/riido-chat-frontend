@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react';
 import Search from '@/assets/icons/Search.svg?react';
 import {
   ConsoleApiError,
-  fetchFirstDocumentGroup,
   fetchQuestionLogDocuments,
   fetchQuestionLogQuestions,
+  fetchQuestionLogTargetGroup,
 } from '@/api/console';
 import { Input } from '@/components/common/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/common/tabs';
@@ -15,10 +15,11 @@ import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import ConsoleSelect, { type ConsoleSelectOption } from '@/components/console/ConsoleSelect';
 import QuestionTable from '@/components/console/QuestionTable';
 import { useConsoleFetch } from '@/hooks/useConsoleFetch';
-import { ANSWER_STATUS_LABEL, formatQuestionCount } from '@/lib/console';
+import { ANSWER_STATUS_LABEL, formatQuestionCount, formatQuestionLogScope } from '@/lib/console';
 import { cn } from '@/lib/utils';
 import type {
   AnswerStatus,
+  DocumentGroupSummary,
   QuestionLogDocument,
   QuestionLogPage,
   QuestionLogQuery,
@@ -73,14 +74,14 @@ const toQuery = ({ q, ...filters }: QuestionFilters): QuestionLogQuery => ({
 });
 
 type QuestionListData = {
-  groupId: number;
+  group: DocumentGroupSummary;
   // 문서 셀렉트의 옵션. 문서 없음과 분류 없음은 옵션이 아니라 세부 문제 없음 필터로 본다.
   documents: QuestionLogDocument[];
 };
 
 /** 문서 셀렉트 옵션은 문서 목록 API 의 행을 그대로 쓴다. 화면에 들어올 때 한 번만 받는다. */
 async function fetchQuestionListData(signal: AbortSignal): Promise<QuestionListData | null> {
-  const group = await fetchFirstDocumentGroup(signal);
+  const group = await fetchQuestionLogTargetGroup(signal);
 
   if (group === null) {
     return null;
@@ -88,7 +89,7 @@ async function fetchQuestionListData(signal: AbortSignal): Promise<QuestionListD
 
   const { items } = await fetchQuestionLogDocuments(group.groupId, signal);
 
-  return { groupId: group.groupId, documents: items };
+  return { group, documents: items };
 }
 
 /** 표 하단의 페이지 문구와 이전·다음. 마지막 페이지를 넘긴 빈 응답도 총 건수는 그대로라 범위는 0건으로 적는다. */
@@ -257,7 +258,7 @@ function FilterBar({
 }
 
 /** 필터를 들고 질문을 조회하는 본문. 필터나 검색어를 바꾸면 1페이지부터 다시 조회하고 필터는 유지한다. */
-function QuestionListBody({ groupId, documents }: QuestionListData) {
+function QuestionListBody({ group, documents }: QuestionListData) {
   const [filters, setFilters] = useState<QuestionFilters>(INITIAL_FILTERS);
   // 입력 중인 검색어는 Enter 또는 돋보기로 확정하기 전까지 조회 조건과 분리한다.
   const [searchDraft, setSearchDraft] = useState('');
@@ -265,7 +266,7 @@ function QuestionListBody({ groupId, documents }: QuestionListData) {
   const fetchQuestions = useCallback(
     async (signal: AbortSignal) => {
       try {
-        return await fetchQuestionLogQuestions(groupId, toQuery(filters), signal);
+        return await fetchQuestionLogQuestions(group.groupId, toQuery(filters), signal);
       } catch (error) {
         // 서버가 쿼리를 거절하면 잘못된 조건을 반복하지 않고 명세대로 전체 필터로 돌아간다.
         if (error instanceof ConsoleApiError && error.code === 'INVALID_REQUEST') {
@@ -276,7 +277,7 @@ function QuestionListBody({ groupId, documents }: QuestionListData) {
         throw error;
       }
     },
-    [groupId, filters],
+    [group.groupId, filters],
   );
   const { state, retry } = useConsoleFetch(fetchQuestions);
 
@@ -291,7 +292,7 @@ function QuestionListBody({ groupId, documents }: QuestionListData) {
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-2">
-        <ConsolePageHeader title="질문 목록" />
+        <ConsolePageHeader title="질문 목록" description={formatQuestionLogScope(group.name)} />
         <FilterBar
           filters={filters}
           searchDraft={searchDraft}
@@ -332,7 +333,7 @@ function QuestionListBody({ groupId, documents }: QuestionListData) {
 /**
  * 질문 목록 화면. 사이드바의 질문 목록과 대시보드 질문 목록 블록의 더보기로 들어온다.
  * 읽기 전용이라 행 클릭, 드로어, 체크박스가 없고 필터와 검색만 동작한다.
- * 들어올 때 첫 문서 그룹과 문서 셀렉트 옵션을 받고, 질문은 필터가 바뀔 때마다 본문이 다시 조회한다.
+ * 들어올 때 질문 로그 조회 대상 그룹과 문서 셀렉트 옵션을 받고, 질문은 필터가 바뀔 때마다 본문이 다시 조회한다.
  */
 export default function QuestionListPage() {
   const { state, retry } = useConsoleFetch(fetchQuestionListData);
@@ -362,8 +363,8 @@ export default function QuestionListPage() {
         </div>
       ) : (
         <QuestionListBody
-          key={state.data.groupId}
-          groupId={state.data.groupId}
+          key={state.data.group.groupId}
+          group={state.data.group}
           documents={state.data.documents}
         />
       )}

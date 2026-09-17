@@ -33,6 +33,9 @@ export const APPLIED_STATUS_LABEL: Record<AppliedStatus, string> = {
 export const formatGroupDescription = (consumerKey: string) =>
   `${consumerKey} 기능이 사용하는 문서 그룹`;
 
+// 질문 로그는 현재 한 그룹만 조회하므로 화면마다 같은 문구로 실제 집계 범위를 밝힌다.
+export const formatQuestionLogScope = (groupName: string) => `조회 대상 문서 그룹: ${groupName}`;
+
 /**
  * 그룹에 실행 중인 작업이 있는지 판정한다.
  * jobInProgress 가 판정의 근거이고, 검색 반영 상태가 IN_PROGRESS 인 응답도 같은 상황이므로 함께 묶어 둔다.
