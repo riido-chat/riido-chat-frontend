@@ -15,7 +15,7 @@ import {
   MessageScrollerItem,
   useMessageScroller,
 } from '@/components/common/message-scroller';
-import homeCharacter from '@/assets/animations/home_animation.apng';
+import homeCharacter from '@/assets/animations/home-character.webp';
 
 type ChatView = 'home' | 'home-expanded' | 'chat';
 
