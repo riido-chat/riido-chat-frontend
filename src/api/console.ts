@@ -41,11 +41,13 @@ const toErrorResponse = (body: unknown): ConsoleErrorResponse | null => {
  */
 export class ConsoleApiError extends Error {
   readonly code: ConsoleErrorResponse['code'];
+  readonly status?: number;
 
-  constructor({ code, message }: ConsoleErrorResponse) {
+  constructor({ code, message }: ConsoleErrorResponse, status?: number) {
     super(message);
     this.name = 'ConsoleApiError';
     this.code = code;
+    this.status = status;
   }
 }
 
@@ -65,7 +67,7 @@ async function readConsoleResponse<T>(response: Response): Promise<T> {
     // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
     // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하거나, 게이트웨이가 형태가 다른 JSON 을 내려주는 경우가 여기에 해당한다.
     const errorBody = toErrorResponse(await response.json().catch(() => null));
-    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
+    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR, response.status);
   }
 
   return response.json();
