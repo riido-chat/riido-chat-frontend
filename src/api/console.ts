@@ -41,11 +41,13 @@ const toErrorResponse = (body: unknown): ConsoleErrorResponse | null => {
  */
 export class ConsoleApiError extends Error {
   readonly code: ConsoleErrorResponse['code'];
+  readonly status?: number;
 
-  constructor({ code, message }: ConsoleErrorResponse) {
+  constructor({ code, message }: ConsoleErrorResponse, status?: number) {
     super(message);
     this.name = 'ConsoleApiError';
     this.code = code;
+    this.status = status;
   }
 }
 
@@ -65,7 +67,7 @@ async function readConsoleResponse<T>(response: Response): Promise<T> {
     // 본문이 code 와 message 로 오지 않는 경우는 애플리케이션에 닿기 전에 게이트웨이가 끊은 때다.
     // 5MB 를 넘는 요청을 웹 서버가 먼저 413 HTML 로 거절하거나, 게이트웨이가 형태가 다른 JSON 을 내려주는 경우가 여기에 해당한다.
     const errorBody = toErrorResponse(await response.json().catch(() => null));
-    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR);
+    throw new ConsoleApiError(errorBody ?? FALLBACK_ERROR, response.status);
   }
 
   return response.json();
@@ -73,12 +75,20 @@ async function readConsoleResponse<T>(response: Response): Promise<T> {
 
 /**
  * 콘솔의 조회 엔드포인트. 화면을 떠나면 응답을 버릴 수 있도록 signal 을 받는다.
- * 중단된 요청은 fetch 가 AbortError 로 거절하므로, 호출한 쪽이 그 경우만 걸러 내면 된다.
+ * 네트워크 및 응답 파싱 오류도 콘솔의 공통 오류 형태로 맞춘다.
  */
 async function getConsole<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, { method: 'GET', signal });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, { method: 'GET', signal });
 
-  return readConsoleResponse<T>(response);
+    return await readConsoleResponse<T>(response);
+  } catch (error) {
+    if (signal?.aborted) {
+      throw error;
+    }
+
+    throw toConsoleApiError(error);
+  }
 }
 
 // 업로드는 multipart 로, GitBook 수집은 JSON 으로 보내고, 검색 반영은 본문이 없다.

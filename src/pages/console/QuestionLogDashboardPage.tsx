@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 
 import ChevronRight from '@/assets/icons/ChevronRight.svg?react';
@@ -15,7 +16,7 @@ import MetricTile from '@/components/console/MetricTile';
 import QuestionLogDocumentTable from '@/components/console/QuestionLogDocumentTable';
 import QuestionTable from '@/components/console/QuestionTable';
 import RankCard, { type RankRow } from '@/components/console/RankCard';
-import { useConsoleFetch } from '@/hooks/useConsoleFetch';
+import { consoleQueryKeys, consoleQueryStaleTime } from '@/lib/consoleQueryKeys';
 import {
   EMPTY_VALUE,
   formatQuestionCount,
@@ -151,59 +152,73 @@ function DashboardBlock({ dashboard }: { dashboard: QuestionLogDashboard }) {
  * 집계 실패는 타일 자리에, 목록 실패는 각 표 자리에 인라인 오류로 보이고, 다시 시도는 세 조회를 함께 반복한다.
  */
 export default function QuestionLogDashboardPage() {
-  const { state, retry } = useConsoleFetch(fetchQuestionLogDashboardData);
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questionLogDashboard(),
+    queryFn: ({ signal }) => fetchQuestionLogDashboardData(signal),
+    // 블록별 실패도 전체 조회의 성공 결과에 포함되므로 실패한 경우만 즉시 오래된 데이터로 취급한다.
+    staleTime: (currentQuery) => {
+      const data = currentQuery.state.data;
+      const hasFailedBlock =
+        data !== null &&
+        data !== undefined &&
+        [data.dashboard, data.documents, data.questions].some((block) => block.status === 'failed');
 
-  if (state.status !== 'ready') {
+      return hasFailedBlock ? 0 : consoleQueryStaleTime;
+    },
+  });
+
+  if (query.data === undefined) {
     return (
       <ConsolePage breadcrumb={[{ label: '질문 로그' }, { label: '질문 분석 대시보드' }]}>
         <div className="flex flex-col gap-4">
           <ConsolePageHeader title="질문 분석 대시보드" />
-          {state.status === 'loading' ? (
-            <ConsoleLoading message={LOADING_MESSAGE} />
+          {query.isError ? (
+            <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
           ) : (
-            <ConsoleFetchError message={state.error.message} onRetry={retry} />
+            <ConsoleLoading message={LOADING_MESSAGE} />
           )}
         </div>
       </ConsolePage>
     );
   }
 
+  const data = query.data;
+  const retry = () => void query.refetch();
+
   return (
     <ConsolePage breadcrumb={[{ label: '질문 로그' }, { label: '질문 분석 대시보드' }]}>
       <div className="flex flex-col gap-4">
         <ConsolePageHeader
           title="질문 분석 대시보드"
-          description={
-            state.data === null ? undefined : formatQuestionLogScope(state.data.group.name)
-          }
+          description={data === null ? undefined : formatQuestionLogScope(data.group.name)}
         />
 
         {/* 그룹이 없는 경우는 실패가 아니라 집계할 대상이 없는 성공이다. */}
-        {state.data === null ? (
+        {data === null ? (
           <p className="text-label text-label-alternative">{EMPTY_GROUP_MESSAGE}</p>
-        ) : state.data.dashboard.status === 'ready' ? (
-          <DashboardBlock dashboard={state.data.dashboard.data} />
+        ) : data.dashboard.status === 'ready' ? (
+          <DashboardBlock dashboard={data.dashboard.data} />
         ) : (
-          <ConsoleFetchError message={state.data.dashboard.message} onRetry={retry} />
+          <ConsoleFetchError message={data.dashboard.message} onRetry={retry} />
         )}
       </div>
 
-      {state.data !== null && (
+      {data !== null && (
         <>
           <section aria-label="문서 목록 미리보기" className="flex flex-col gap-4">
             <SectionLink title="문서 목록" to={DOCUMENT_LIST_PATH} />
-            {state.data.documents.status === 'ready' ? (
-              <QuestionLogDocumentTable items={state.data.documents.data} />
+            {data.documents.status === 'ready' ? (
+              <QuestionLogDocumentTable items={data.documents.data} />
             ) : (
-              <ConsoleFetchError message={state.data.documents.message} onRetry={retry} />
+              <ConsoleFetchError message={data.documents.message} onRetry={retry} />
             )}
           </section>
           <section aria-label="질문 목록 미리보기" className="flex flex-col gap-4">
             <SectionLink title="질문 목록" to={QUESTION_LIST_PATH} />
-            {state.data.questions.status === 'ready' ? (
-              <QuestionTable items={state.data.questions.data} />
+            {data.questions.status === 'ready' ? (
+              <QuestionTable items={data.questions.data} />
             ) : (
-              <ConsoleFetchError message={state.data.questions.message} onRetry={retry} />
+              <ConsoleFetchError message={data.questions.message} onRetry={retry} />
             )}
           </section>
         </>

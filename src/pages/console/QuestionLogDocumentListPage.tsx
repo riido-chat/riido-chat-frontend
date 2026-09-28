@@ -1,9 +1,11 @@
+import { useQuery } from '@tanstack/react-query';
+
 import { fetchQuestionLogDocuments, fetchQuestionLogTargetGroup } from '@/api/console';
 import { ConsoleFetchError, ConsoleLoading } from '@/components/console/ConsoleFetchFallback';
 import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import QuestionLogDocumentTable from '@/components/console/QuestionLogDocumentTable';
-import { useConsoleFetch } from '@/hooks/useConsoleFetch';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import { formatQuestionLogScope } from '@/lib/console';
 import type { DocumentGroupSummary, QuestionLogDocument } from '@/types/console.types';
 
@@ -39,7 +41,10 @@ async function fetchQuestionLogDocumentListData(
  * 읽기 전용이라 정렬, 필터, 페이지네이션이 없고, 조회 실패는 표 자리에 인라인 오류로 보인다.
  */
 export default function QuestionLogDocumentListPage() {
-  const { state, retry } = useConsoleFetch(fetchQuestionLogDocumentListData);
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questionLogDocuments(),
+    queryFn: ({ signal }) => fetchQuestionLogDocumentListData(signal),
+  });
 
   return (
     <ConsolePage breadcrumb={[{ label: '질문 로그', to: DASHBOARD_PATH }, { label: '문서 목록' }]}>
@@ -47,24 +52,24 @@ export default function QuestionLogDocumentListPage() {
         <ConsolePageHeader
           title="문서 목록"
           description={
-            state.status === 'ready' && state.data !== null
-              ? formatQuestionLogScope(state.data.group.name)
+            query.data !== undefined && query.data !== null
+              ? formatQuestionLogScope(query.data.group.name)
               : undefined
           }
         />
 
-        {state.status === 'loading' && <ConsoleLoading message={LOADING_MESSAGE} />}
+        {query.data === undefined && !query.isError && <ConsoleLoading message={LOADING_MESSAGE} />}
 
-        {state.status === 'failed' && (
-          <ConsoleFetchError message={state.error.message} onRetry={retry} />
+        {query.data === undefined && query.isError && (
+          <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
         )}
 
         {/* 그룹이 없는 경우는 실패가 아니라 집계할 대상이 없는 성공이다. */}
-        {state.status === 'ready' &&
-          (state.data === null ? (
+        {query.data !== undefined &&
+          (query.data === null ? (
             <p className="text-label text-label-alternative">{EMPTY_GROUP_MESSAGE}</p>
           ) : (
-            <QuestionLogDocumentTable items={state.data.documents} />
+            <QuestionLogDocumentTable items={query.data.documents} />
           ))}
       </div>
     </ConsolePage>

@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { syncGitbook, toConsoleApiError } from '@/api/console';
 import GitbookSyncDialog from '@/components/console/GitbookSyncDialog';
 import GitbookSyncResultDialog from '@/components/console/GitbookSyncResultDialog';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import type { GitbookSyncOutcome, GitbookSyncTarget } from '@/types/console.types';
 
 type GitbookSyncFlowParams = {
   groupId: number;
   /** 상세 조회의 GitBook 원천 루트 URL. 원천이 있으면 읽기 전용으로 보이고, 없으면 null 이라 입력을 받는다. */
   rootUrl: string | null;
-  /** 실행이 끝나 배경 상세가 바뀌었을 때의 재조회 */
-  onRefetch: () => void;
   /** 결과 모달의 검색에 반영하기. 결과 모달을 닫은 뒤 검색 반영 확인 모달을 연다. */
   onRequestReindex: () => void;
 };
@@ -19,12 +19,13 @@ type GitbookSyncFlowParams = {
  * GitBook 수집 흐름. 수집 모달이 수집 중까지 맡고, 응답이 오면 결과 모달로 바꿔 보인다.
  * 오류 모달의 다시 시도는 입력값을 유지하지 않고 수집 모달을 처음 상태로 다시 연다.
  */
-export function useGitbookSyncFlow({
-  groupId,
-  rootUrl,
-  onRefetch,
-  onRequestReindex,
-}: GitbookSyncFlowParams) {
+export function useGitbookSyncFlow({ groupId, rootUrl, onRequestReindex }: GitbookSyncFlowParams) {
+  const queryClient = useQueryClient();
+  const syncMutation = useMutation({
+    mutationFn: ({ targetGroupId, sourceUrl }: { targetGroupId: number; sourceUrl: string }) =>
+      syncGitbook(targetGroupId, sourceUrl),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: consoleQueryKeys.all }),
+  });
   // null 이면 각각 닫힌 상태다.
   const [target, setTarget] = useState<GitbookSyncTarget | null>(null);
   const [outcome, setOutcome] = useState<GitbookSyncOutcome | null>(null);
@@ -45,9 +46,11 @@ export function useGitbookSyncFlow({
     }
 
     try {
-      const result = await syncGitbook(syncingTarget.groupId, sourceUrl);
+      const result = await syncMutation.mutateAsync({
+        targetGroupId: syncingTarget.groupId,
+        sourceUrl,
+      });
       // 수집이 끝나면 반영 대기가 늘고 문서 표가 바뀌지만, 검색에는 반영되지 않아 검색 반영 상태 뱃지는 그대로다.
-      onRefetch();
       setOutcome({ status: 'done', result });
     } catch (error) {
       setOutcome({ status: 'failed', message: toConsoleApiError(error).message });
@@ -61,11 +64,7 @@ export function useGitbookSyncFlow({
       <GitbookSyncDialog target={target} onClose={() => setTarget(null)} onSync={sync} />
       <GitbookSyncResultDialog
         outcome={outcome}
-        onClose={() => {
-          // 닫기는 모달만 닫고, 반영 대기가 갱신된 상세가 보이도록 재조회 1회를 안전망으로 둔다.
-          setOutcome(null);
-          onRefetch();
-        }}
+        onClose={() => setOutcome(null)}
         onReindex={() => {
           setOutcome(null);
           onRequestReindex();

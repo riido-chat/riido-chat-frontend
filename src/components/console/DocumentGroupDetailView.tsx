@@ -14,23 +14,19 @@ export const DOCUMENT_GROUP_LIST_PATH = '/document-groups';
 
 type DocumentGroupDetailViewProps = {
   detail: DocumentGroupDetail;
-  /** 실행이 끝나 배경 상세가 바뀌었을 때의 재조회 */
-  onRefetch: () => void;
 };
 
 /** 조회가 끝난 문서 그룹 상세 화면. 업로드, 검색 반영, GitBook 수집 흐름을 이 안에서 연다. */
-export default function DocumentGroupDetailView({
-  detail,
-  onRefetch,
-}: DocumentGroupDetailViewProps) {
+export default function DocumentGroupDetailView({ detail }: DocumentGroupDetailViewProps) {
   const { group, summary, documents } = detail;
 
-  const reindexFlow = useReindexFlow({ groupId: group.groupId, onRefetch });
-  const uploadFlow = useUploadFlow({ onRefetch, onRequestReindex: reindexFlow.openConfirm });
+  const reindexFlow = useReindexFlow({ groupId: group.groupId });
+  const uploadFlow = useUploadFlow({
+    onRequestReindex: reindexFlow.openConfirm,
+  });
   const gitbookSyncFlow = useGitbookSyncFlow({
     groupId: group.groupId,
     rootUrl: findGitbookSource(detail)?.rootUrl ?? null,
-    onRefetch,
     onRequestReindex: reindexFlow.openConfirm,
   });
 
