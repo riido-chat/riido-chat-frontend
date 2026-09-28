@@ -198,7 +198,7 @@ flowchart LR
 #### 운영 콘솔 문서 관리
 
 - 문서 그룹 목록과 그룹 상세(요약, 수집 원천, 문서 표)를 조회한다. 문서 수·검색 반영 상태·대기 건수는 서버가 계산한 값을 그대로 표시한다.
-- 문서 업로드 모달은 신규 업로드(`POST /document-groups/{groupId}/documents`, 파일 + 문서명)와 수정본 업로드(`POST /documents/{documentId}/versions`, 파일만)를 multipart 로 나눠 보낸다. `UploadResultDialog` 가 성공과 실패 결과를 함께 보여 준다.
+- 문서 업로드 모달은 신규 업로드(`POST /api/admin/document-groups/{groupId}/documents`, 파일 + 문서명)와 수정본 업로드(`POST /api/admin/documents/{documentId}/versions`, 파일만)를 multipart 로 나눠 보낸다. `UploadResultDialog` 가 성공과 실패 결과를 함께 보여 준다.
 - 검색 반영 모달(`ReindexDialog`)은 확인 → 진행 중 잠금 → 완료 또는 실패의 단계로 진행한다. 다시 시도는 같은 호출을 반복한다.
 - GitBook 수집 모달(`GitbookSyncDialog`)은 루트 URL 을 받아 수집을 실행하고, `GitbookSyncResultDialog` 가 성공·실패 집계와 오류를 보여 준다.
 - 업로드·검색 반영·GitBook 수집은 서버가 동기로 처리한 뒤 응답하므로 진행률 없이 잠금 화면을 유지하고, 실행이 끝나면 배경의 그룹 상세를 재조회한다.
