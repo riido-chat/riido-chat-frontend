@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toConsoleApiError, uploadDocument } from '@/api/console';
 import DocumentUploadDialog from '@/components/console/DocumentUploadDialog';
 import UploadResultDialog from '@/components/console/UploadResultDialog';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import type {
   ConsoleDocument,
   DocumentUploadRequest,
@@ -11,8 +13,6 @@ import type {
 } from '@/types/console.types';
 
 type UploadFlowParams = {
-  /** 실행이 끝나 배경 상세가 바뀌었을 때의 재조회 */
-  onRefetch: () => void;
   /** 결과 모달의 검색에 반영하기. 결과 모달을 닫은 뒤 검색 반영 확인 모달을 연다. */
   onRequestReindex: () => void;
 };
@@ -23,7 +23,12 @@ type UploadFlowParams = {
  * 실패는 code 로 화면을 나누지 않고 모두 오류 모달 하나로 보내며, 본문은 서버가 내려준 message 그대로다.
  * NOT_FOUND, JOB_IN_PROGRESS, INVALID_REQUEST, DOCUMENT_NOT_REVISABLE 은 버튼이 비활성인 정상 흐름에서 도달할 수 없으므로 따로 다루지 않는다.
  */
-export function useUploadFlow({ onRefetch, onRequestReindex }: UploadFlowParams) {
+export function useUploadFlow({ onRequestReindex }: UploadFlowParams) {
+  const queryClient = useQueryClient();
+  const uploadMutation = useMutation({
+    mutationFn: uploadDocument,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: consoleQueryKeys.all }),
+  });
   const [target, setTarget] = useState<DocumentUploadTarget | null>(null);
   // 다시 업로드는 실패한 원래 모달로 돌아가야 하므로 직전 대상을 남겨 둔다.
   const [failedTarget, setFailedTarget] = useState<DocumentUploadTarget | null>(null);
@@ -34,9 +39,8 @@ export function useUploadFlow({ onRefetch, onRequestReindex }: UploadFlowParams)
     const uploadingTarget = target;
 
     try {
-      const result = await uploadDocument(request);
+      const result = await uploadMutation.mutateAsync(request);
       // 성공하면 새 판이 잡히고 반영 대기가 하나 늘며 검색 반영 상태가 반영 필요로 바뀐다.
-      onRefetch();
       setOutcome({ status: 'ready', result });
     } catch (error) {
       // 어느 경우든 기존 문서와 ACTIVE 색인은 그대로 남는다.
@@ -58,11 +62,7 @@ export function useUploadFlow({ onRefetch, onRequestReindex }: UploadFlowParams)
       <DocumentUploadDialog target={target} onClose={() => setTarget(null)} onUpload={upload} />
       <UploadResultDialog
         outcome={outcome}
-        onClose={() => {
-          // 닫기는 모달만 닫고, 새 문서와 반영 대기가 갱신된 상세가 보이도록 재조회 1회를 안전망으로 둔다.
-          setOutcome(null);
-          onRefetch();
-        }}
+        onClose={() => setOutcome(null)}
         onReindex={() => {
           // 반영 대상 버전은 화면에 나열하지 않는다.
           setOutcome(null);
