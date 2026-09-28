@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import Search from '@/assets/icons/Search.svg?react';
 import {
@@ -14,7 +15,7 @@ import ConsolePage from '@/components/console/ConsolePage';
 import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import ConsoleSelect, { type ConsoleSelectOption } from '@/components/console/ConsoleSelect';
 import QuestionTable from '@/components/console/QuestionTable';
-import { useConsoleFetch } from '@/hooks/useConsoleFetch';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import { ANSWER_STATUS_LABEL, formatQuestionCount, formatQuestionLogScope } from '@/lib/console';
 import { cn } from '@/lib/utils';
 import type {
@@ -263,8 +264,9 @@ function QuestionListBody({ group, documents }: QuestionListData) {
   // 입력 중인 검색어는 Enter 또는 돋보기로 확정하기 전까지 조회 조건과 분리한다.
   const [searchDraft, setSearchDraft] = useState('');
 
-  const fetchQuestions = useCallback(
-    async (signal: AbortSignal) => {
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questions(group.groupId, toQuery(filters)),
+    queryFn: async ({ signal }) => {
       try {
         return await fetchQuestionLogQuestions(group.groupId, toQuery(filters), signal);
       } catch (error) {
@@ -277,9 +279,7 @@ function QuestionListBody({ group, documents }: QuestionListData) {
         throw error;
       }
     },
-    [group.groupId, filters],
-  );
-  const { state, retry } = useConsoleFetch(fetchQuestions);
+  });
 
   const changeFilters = (patch: Partial<Omit<QuestionFilters, 'page'>>) =>
     setFilters((current) => ({ ...current, ...patch, page: 1 }));
@@ -305,21 +305,23 @@ function QuestionListBody({ group, documents }: QuestionListData) {
 
       <section aria-label="질문" className="flex flex-col gap-2">
         <h2 className="text-headline text-label-strong font-semibold">질문</h2>
-        {state.status === 'loading' && <ConsoleLoading message={QUESTIONS_LOADING_MESSAGE} />}
-        {state.status === 'failed' && (
-          <ConsoleFetchError message={state.error.message} onRetry={retry} />
+        {query.data === undefined && !query.isError && (
+          <ConsoleLoading message={QUESTIONS_LOADING_MESSAGE} />
+        )}
+        {query.data === undefined && query.isError && (
+          <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
         )}
         {/* 전체 결과가 없을 때만 빈 상태로 본다. 범위를 벗어난 빈 페이지는 이전으로 돌아갈 수 있게 페이지네이션을 남긴다. */}
-        {state.status === 'ready' &&
-          (state.data.totalCount === 0 ? (
+        {query.data !== undefined &&
+          (query.data.totalCount === 0 ? (
             <EmptyState onReset={resetFilters} />
           ) : (
             <QuestionTable
-              items={state.data.items}
+              items={query.data.items}
               footer={
                 <Pagination
-                  page={state.data.page}
-                  totalCount={state.data.totalCount}
+                  page={query.data.page}
+                  totalCount={query.data.totalCount}
                   onPageChange={changePage}
                 />
               }
@@ -336,17 +338,20 @@ function QuestionListBody({ group, documents }: QuestionListData) {
  * 들어올 때 질문 로그 조회 대상 그룹과 문서 셀렉트 옵션을 받고, 질문은 필터가 바뀔 때마다 본문이 다시 조회한다.
  */
 export default function QuestionListPage() {
-  const { state, retry } = useConsoleFetch(fetchQuestionListData);
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questionListSetup(),
+    queryFn: ({ signal }) => fetchQuestionListData(signal),
+  });
 
-  if (state.status !== 'ready') {
+  if (query.data === undefined) {
     return (
       <ConsolePage breadcrumb={BREADCRUMB}>
         <div className="flex flex-col gap-2">
           <ConsolePageHeader title="질문 목록" />
-          {state.status === 'loading' ? (
-            <ConsoleLoading message={PAGE_LOADING_MESSAGE} />
+          {query.isError ? (
+            <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
           ) : (
-            <ConsoleFetchError message={state.error.message} onRetry={retry} />
+            <ConsoleLoading message={PAGE_LOADING_MESSAGE} />
           )}
         </div>
       </ConsolePage>
@@ -356,16 +361,16 @@ export default function QuestionListPage() {
   return (
     <ConsolePage breadcrumb={BREADCRUMB}>
       {/* 그룹이 없는 경우는 실패가 아니라 조회할 대상이 없는 성공이다. */}
-      {state.data === null ? (
+      {query.data === null ? (
         <div className="flex flex-col gap-2">
           <ConsolePageHeader title="질문 목록" />
           <p className="text-label text-label-alternative">{EMPTY_GROUP_MESSAGE}</p>
         </div>
       ) : (
         <QuestionListBody
-          key={state.data.group.groupId}
-          group={state.data.group}
-          documents={state.data.documents}
+          key={query.data.group.groupId}
+          group={query.data.group}
+          documents={query.data.documents}
         />
       )}
     </ConsolePage>

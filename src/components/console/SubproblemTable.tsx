@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
 
 import { fetchQuestionLogQuestions } from '@/api/console';
@@ -10,7 +11,7 @@ import {
   ConsoleTableHead,
 } from '@/components/console/ConsoleTable';
 import { AnswerStatusBadge, ApplyStatusBadge } from '@/components/console/StatusBadge';
-import { useConsoleFetch } from '@/hooks/useConsoleFetch';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import {
   EMPTY_VALUE,
   formatAbsoluteTime,
@@ -69,19 +70,18 @@ function CanonicalAnswerBody({ canonicalAnswer }: { canonicalAnswer: CanonicalAn
  * 질문이 많아도 펼침이 화면을 다 차지하지 않도록 이 표만 예외로 세로 스크롤을 두고 헤더는 고정한다.
  */
 function SubproblemQuestions({ groupId, subproblemId }: { groupId: number; subproblemId: string }) {
-  const fetchQuestions = useCallback(
-    (signal: AbortSignal) =>
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questions(groupId, { subproblemId, size: QUESTIONS_PAGE_SIZE }),
+    queryFn: ({ signal }) =>
       fetchQuestionLogQuestions(groupId, { subproblemId, size: QUESTIONS_PAGE_SIZE }, signal),
-    [groupId, subproblemId],
-  );
-  const { state, retry } = useConsoleFetch(fetchQuestions);
+  });
 
-  if (state.status === 'loading') {
-    return <ConsoleLoading message={QUESTIONS_LOADING_MESSAGE} />;
-  }
-
-  if (state.status === 'failed') {
-    return <ConsoleFetchError message={state.error.message} onRetry={retry} />;
+  if (query.data === undefined) {
+    return query.isError ? (
+      <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
+    ) : (
+      <ConsoleLoading message={QUESTIONS_LOADING_MESSAGE} />
+    );
   }
 
   return (
@@ -104,14 +104,14 @@ function SubproblemQuestions({ groupId, subproblemId }: { groupId: number; subpr
           </tr>
         </thead>
         <ConsoleTableBody>
-          {state.data.items.length === 0 ? (
+          {query.data.items.length === 0 ? (
             <tr>
               <ConsoleTableCell colSpan={3} className="text-label-assistive h-15">
                 {EMPTY_VALUE}
               </ConsoleTableCell>
             </tr>
           ) : (
-            state.data.items.map((item) => (
+            query.data.items.map((item) => (
               <tr key={item.ragRunId}>
                 <ConsoleTableCell className="h-15 truncate" title={item.question}>
                   {item.question}
@@ -134,10 +134,10 @@ function SubproblemQuestions({ groupId, subproblemId }: { groupId: number; subpr
         </ConsoleTableBody>
       </ConsoleTable>
 
-      {state.data.totalCount > 0 && (
+      {query.data.totalCount > 0 && (
         <p className="text-caption text-label-assistive self-end px-2">
-          전체 {formatQuestionCount(state.data.totalCount)} 중 최근{' '}
-          {formatQuestionCount(state.data.items.length)} 표시
+          전체 {formatQuestionCount(query.data.totalCount)} 중 최근{' '}
+          {formatQuestionCount(query.data.items.length)} 표시
         </p>
       )}
     </div>

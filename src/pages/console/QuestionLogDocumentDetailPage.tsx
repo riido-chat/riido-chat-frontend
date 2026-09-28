@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 
 import { fetchQuestionLogDocumentDetail, fetchQuestionLogTargetGroup } from '@/api/console';
@@ -8,7 +8,7 @@ import ConsolePageHeader from '@/components/console/ConsolePageHeader';
 import type { BreadcrumbEntry } from '@/components/console/ConsoleTopBar';
 import MetricTile from '@/components/console/MetricTile';
 import SubproblemTable from '@/components/console/SubproblemTable';
-import { useConsoleFetch } from '@/hooks/useConsoleFetch';
+import { consoleQueryKeys } from '@/lib/consoleQueryKeys';
 import { formatQuestionCount, formatQuestionLogScope, formatSubproblemCount } from '@/lib/console';
 import type { DocumentGroupSummary, QuestionLogDocumentDetail } from '@/types/console.types';
 
@@ -34,8 +34,9 @@ export default function QuestionLogDocumentDetailPage() {
   // 주소 표시줄에서 받은 값은 문자열이므로 정수로 바꾼다.
   const numericDocumentId = Number(documentId);
 
-  const fetchDetail = useCallback(
-    async (signal: AbortSignal): Promise<DocumentDetailData | null> => {
+  const query = useQuery({
+    queryKey: consoleQueryKeys.questionLogDocument(numericDocumentId),
+    queryFn: async ({ signal }): Promise<DocumentDetailData | null> => {
       const group = await fetchQuestionLogTargetGroup(signal);
 
       if (group === null) {
@@ -46,24 +47,22 @@ export default function QuestionLogDocumentDetailPage() {
 
       return { group, detail };
     },
-    [numericDocumentId],
-  );
-  const { state, retry } = useConsoleFetch(fetchDetail);
+  });
 
-  if (state.status !== 'ready') {
+  if (query.data === undefined) {
     return (
       <ConsolePage breadcrumb={PARENT_BREADCRUMB}>
-        {state.status === 'loading' ? (
-          <ConsoleLoading message={LOADING_MESSAGE} />
+        {query.isError ? (
+          <ConsoleFetchError message={query.error.message} onRetry={() => void query.refetch()} />
         ) : (
-          <ConsoleFetchError message={state.error.message} onRetry={retry} />
+          <ConsoleLoading message={LOADING_MESSAGE} />
         )}
       </ConsolePage>
     );
   }
 
   // 그룹이 없는 경우는 실패가 아니라 집계할 대상이 없는 성공이다.
-  if (state.data === null) {
+  if (query.data === null) {
     return (
       <ConsolePage breadcrumb={PARENT_BREADCRUMB}>
         <p className="text-label text-label-alternative">{EMPTY_GROUP_MESSAGE}</p>
@@ -71,7 +70,7 @@ export default function QuestionLogDocumentDetailPage() {
     );
   }
 
-  const { group, detail } = state.data;
+  const { group, detail } = query.data;
 
   return (
     <ConsolePage breadcrumb={[...PARENT_BREADCRUMB, { label: detail.document.documentTitle }]}>
